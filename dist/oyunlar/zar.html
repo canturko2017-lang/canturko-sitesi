@@ -11,22 +11,22 @@
     h1 { letter-spacing: .15em; font-size: clamp(28px, 6vw, 44px); margin: 0 0 12px; }
     p { color: #cbd9ce; font: 16px Arial, sans-serif; line-height: 1.5; }
     .masa { background: radial-gradient(ellipse, #367258, #1a4838); border: 10px solid #664a30; border-radius: 28px; padding: 45px 12px 30px; display: flex; justify-content: center; gap: clamp(25px, 9vw, 100px); box-shadow: 0 16px 35px #0007; }
-    .zar { width: 140px; height: 140px; padding: 17px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); background: linear-gradient(135deg, #fffdf5, #ded7c4); border-radius: 16px; box-shadow: 4px 8px 10px #0007, inset 0 0 0 2px #c8bea6; }
+    .zar { cursor: pointer; touch-action: manipulation; width: 140px; height: 140px; padding: 17px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); background: linear-gradient(135deg, #fffdf5, #ded7c4); border-radius: 16px; box-shadow: 4px 8px 10px #0007, inset 0 0 0 2px #c8bea6; }
     .nokta { width: 18px; height: 18px; border-radius: 50%; background: #272b27; place-self: center; box-shadow: inset 1px 2px 3px #0008; }
     .etiket { margin: 16px 0 0; color: #d6e3d7; font: bold 14px Arial, sans-serif; }
     #sonuc { min-height: 42px; margin: 24px 0 12px; font: bold 24px Arial, sans-serif; }
     button { border: 0; border-radius: 8px; background: #e7cb91; color: #25362a; font: bold 18px Arial, sans-serif; padding: 12px 38px; cursor: pointer; }
     button:hover { background: #f8dfa9; }
-    @media (max-width: 420px) { .zar { width: 110px; height: 110px; padding: 12px; } }
+    @media (max-width: 420px) { .zar { cursor: pointer; touch-action: manipulation; width: 110px; height: 110px; padding: 12px; } }
   </style>
 </head>
 <body>
   <main>
     <h1>ZAR MASASI</h1>
-    <p>Oyna'ya bas. Sonra sol ve sağ ok tuşlarıyla zarları at.</p>
+    <p>Oyna’ya bas. Sonra zarlara dokun veya ok tuşlarıyla zarları at.</p>
     <div class="masa">
-      <div><div class="zar" id="zar0"></div><div class="etiket">← SOL OK</div></div>
-      <div><div class="zar" id="zar1"></div><div class="etiket">SAĞ OK →</div></div>
+      <div><div class="zar" id="zar0" role="button" tabindex="0" aria-label="Sol zarı at"></div><div class="etiket">← SOL OK</div></div>
+      <div><div class="zar" id="zar1" role="button" tabindex="0" aria-label="Sağ zarı at"></div><div class="etiket">SAĞ OK →</div></div>
     </div>
     <div id="sonuc" aria-live="polite">Başlamak için Oyna'ya bas</div>
     <button id="oyna">Oyna</button>
@@ -48,20 +48,27 @@
     }
     document.getElementById('oyna').addEventListener('click', () => {
       zarlar = [null, null]; basladi = true; ciz();
-      sonuc.textContent = 'Şimdi ok tuşlarına bas!';
+      sonuc.textContent = 'Şimdi zarlara dokun veya ok tuşlarına bas!';
       document.getElementById('oyna').textContent = 'Yeniden Oyna';
     });
-    document.addEventListener('keydown', event => {
-      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-      event.preventDefault();
-      if (!basladi) { sonuc.textContent = "Önce Oyna'ya bas!"; return; }
-      const sira = event.key === 'ArrowLeft' ? 0 : 1;
+    function zarAt(sira) {
+      if (!basladi) { sonuc.textContent = "Önce Oyna’ya bas!"; return; }
       if (zarlar[sira] !== null) return;
       zarlar[sira] = Math.floor(Math.random() * 6) + 1;
       ciz();
       sonuc.textContent = zarlar.every(sayi => sayi !== null)
         ? `${zarlar[0]} + ${zarlar[1]} = ${zarlar[0] + zarlar[1]}`
-        : 'Şimdi diğer ok tuşuna bas!';
+        : 'Şimdi diğer zarı at!';
+    }
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      zarAt(event.key === 'ArrowLeft' ? 0 : 1);
+    });
+    [0,1].forEach(sira => {
+      const zar=document.getElementById('zar'+sira);
+      zar.addEventListener('click',()=>zarAt(sira));
+      zar.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();zarAt(sira)}});
     });
     ciz();
   </script>
