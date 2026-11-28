@@ -7,6 +7,7 @@
 #shoreArrow[hidden],.swim-status[hidden]{display:none}
 .swim-status{display:block;margin-top:5px;color:#abe6ec;font-size:13px}
 .swimming .cross,.jet-riding .cross,.air-riding .cross{display:none}
+.firing .cross{color:#ffda86;text-shadow:0 0 5px #e89a42}
 .flight-panel{position:absolute;right:20px;bottom:148px;max-width:min(275px,calc(100vw - 42px));padding:11px 13px;border:1px solid #668b95;border-radius:9px;background:#102432ed;color:#e4f5f6;font:13px/1.45 Arial,sans-serif}
 .flight-panel[hidden]{display:none}.flight-panel strong{display:block;color:#fff}.flight-panel button{display:block;width:100%;margin-top:8px;padding:9px 12px;background:#aee5e8;border:0;border-radius:7px;color:#153040;font:700 13px Arial,sans-serif;cursor:pointer}.flight-panel button[disabled]{cursor:default;opacity:.65}
 .flight-panel button[hidden]{display:none}
@@ -240,7 +241,8 @@ const enemies = Array.from({ length: 3 }, (_, index) => {
   scene.add(opponent);
   return opponent;
 });
-let stage=0,health=100,money=0,weapon='Tabanca',ammo=30,inventory=false,yaw=-Math.PI/2,last=performance.now(),nextShot=0,damageAt=0,gestureUntil=0;const keys={};const $=s=>document.querySelector(s);const mission=$('#mission'),notice=$('#notice');function ui(){mission.textContent=['Görev: Bir araca yaklaş ve F ile bin.','Görev: Sarı halkadaki limana git.','Görev: Limandaki rakipleri geç.','Görev: Paketi sarı halkaya ulaştır.','Görev tamamlandı! Şehri keşfet.','Görev sona erdi.'][stage];$('#health').textContent=health;$('#money').textContent=money;$('#character').textContent='Karakter: '+people[selected].name;$('#weapon').textContent=weapon+(weapon==='Yumruk'?'':' · '+ammo+' mermi')}ui();function toggleInventory(){inventory=!inventory;document.body.classList.toggle('inv-open',inventory);if(inventory)clearMovement();$('#inventory').classList.toggle('open',inventory);if(inventory)document.exitPointerLock?.()}function chooseWeapon(w){weapon=w;ui();if(inventory)toggleInventory()}document.querySelectorAll('[data-weapon]').forEach(b=>b.onclick=()=>chooseWeapon(b.dataset.weapon));
+const missionAmmo = 30;
+let stage=0,health=100,money=0,weapon='Tabanca',ammo=missionAmmo,inventory=false,yaw=-Math.PI/2,last=performance.now(),nextShot=0,damageAt=0,gestureUntil=0;const keys={};const $=s=>document.querySelector(s);const mission=$('#mission'),notice=$('#notice');function ui(){mission.textContent=['Görev: Bir araca yaklaş ve F ile bin.','Görev: Sarı halkadaki limana git.','Görev: Limandaki rakipleri geç.','Görev: Paketi sarı halkaya ulaştır.','Görev tamamlandı! Şehri keşfet.','Görev sona erdi.'][stage];$('#health').textContent=health;$('#money').textContent=money;$('#character').textContent='Karakter: '+people[selected].name;$('#weapon').textContent=weapon+(weapon==='Yumruk'?'':' · '+ammo+' mermi')}ui();function toggleInventory(){inventory=!inventory;document.body.classList.toggle('inv-open',inventory);if(inventory)clearMovement();$('#inventory').classList.toggle('open',inventory);if(inventory)document.exitPointerLock?.()}function chooseWeapon(w){weapon=w;ui();if(inventory)toggleInventory()}document.querySelectorAll('[data-weapon]').forEach(b=>b.onclick=()=>chooseWeapon(b.dataset.weapon));
 const motionKeys = { arrowup: 'w', arrowdown: 's', arrowleft: 'a', arrowright: 'd' };
 const arrows = { w: 'arrowup', s: 'arrowdown', a: 'arrowleft', d: 'arrowright' };
 const touchKeys = new Map();
@@ -251,6 +253,18 @@ const cameraRay = new THREE.Ray();
 const cameraHit = new THREE.Vector3();
 const buildingBox = new THREE.Box3();
 const up = new THREE.Vector3(0, 1, 0);
+const shotDuration = 110;
+const shotEffect = new THREE.Group();
+const muzzleFlash = new THREE.Mesh(new THREE.SphereGeometry(.1, 8, 6),
+  new THREE.MeshBasicMaterial({ color: 0xfff0b8, transparent: true, depthWrite: false }));
+const shotTrail = new THREE.Mesh(new THREE.CylinderGeometry(.012, .025, 6.8, 6),
+  new THREE.MeshBasicMaterial({ color: 0xffc46e, transparent: true, depthWrite: false }));
+shotTrail.rotation.x = Math.PI / 2;
+shotTrail.position.z = -3.4;
+shotEffect.add(muzzleFlash, shotTrail);
+shotEffect.visible = false;
+scene.add(shotEffect);
+let shotStarted = 0;
 const vehicleAction = $('#vehicleAction');
 const shoreDistance = $('#shoreDistance');
 const shoreArrow = $('#shoreArrow');
@@ -574,7 +588,62 @@ canvas.addEventListener('pointermove', event => {
 canvas.addEventListener('lostpointercapture', event => {
   if (event.pointerId === drag?.id) drag = null;
 });
-function shoot(){if(current||swimming||inventory||stage!==2||performance.now()<nextShot)return;nextShot=performance.now()+250;if(weapon!=='Yumruk'){if(ammo<=0){notice.textContent='Mermi bitti! R ile yeniden başlat.';return}ammo--}ui();const origin=player.position.clone().add(new THREE.Vector3(0,1.5,0));const direction=new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0),yaw);const candidates=enemies.filter(e=>e.visible).map(e=>{const delta=e.position.clone().sub(player.position);const distance=delta.length();return {e,distance,angle:delta.normalize().dot(direction)}}).filter(x=>x.distance<(weapon==='Yumruk'?4:65)&&x.angle>.96).sort((a,b)=>a.distance-b.distance);if(candidates.length){const e=candidates[0].e;e.visible=false;if(stage===2&&enemies.every(x=>!x.visible)){stage=3;marker.visible=true;marker.position.set(-160,.2,160);ui()}}}
+function showShot(now) {
+  shotStarted = now;
+  shotEffect.position.set(.32, 1.35, -.62).applyAxisAngle(up, yaw).add(player.position);
+  shotEffect.rotation.y = yaw;
+  muzzleFlash.material.opacity = 1;
+  shotTrail.material.opacity = .8;
+  shotEffect.visible = true;
+  document.body.classList.add('firing');
+}
+
+function updateShot(now) {
+  if (!shotEffect.visible) return;
+  const opacity = THREE.MathUtils.clamp(1 - (now - shotStarted) / shotDuration, 0, 1);
+  muzzleFlash.material.opacity = opacity;
+  shotTrail.material.opacity = opacity * .8;
+  if (opacity > 0) return;
+  shotEffect.visible = false;
+  document.body.classList.remove('firing');
+}
+
+function shoot() {
+  const now = performance.now();
+  if (current || swimming || inventory || phone.isOpen() || fullscreen.isHelpOpen() || stage === 5 || now < nextShot) return;
+  nextShot = now + 250;
+  const unarmed = weapon === 'Yumruk';
+  if (!unarmed) {
+    if (ammo <= 0) {
+      explain('Mermi bitti. R ile yeniden başlat.');
+      return;
+    }
+    ammo--;
+    ui();
+    showShot(now);
+  }
+  if (stage !== 2) return;
+  const direction = new THREE.Vector3(0, 0, -1).applyAxisAngle(up, yaw);
+  const reach = unarmed ? 4 : 65;
+  let target = null;
+  let closest = reach;
+  for (const opponent of enemies) {
+    if (!opponent.visible) continue;
+    const delta = opponent.position.clone().sub(player.position);
+    const distance = delta.length();
+    if (distance >= closest || delta.normalize().dot(direction) <= .96) continue;
+    target = opponent;
+    closest = distance;
+  }
+  if (!target) return;
+  target.visible = false;
+  if (enemies.every(opponent => !opponent.visible)) {
+    stage = 3;
+    marker.visible = true;
+    marker.position.set(-160, .2, 160);
+    ui();
+  }
+}
 function blocked(x, z, vehicle) {
   if (vehicle === jetSki) {
     const depth = x - SehirSahili.limitAt(z);
@@ -730,6 +799,7 @@ function updateMission(now) {
   const position = player.position;
   if (stage === 1 && position.distanceTo(marker.position) < 8) {
     stage = 2;
+    ammo = missionAmmo;
     marker.visible = false;
     ui();
   }
@@ -798,6 +868,7 @@ function loop(now) {
     updateCityCamera(1 - Math.exp(-dt * 10));
     updateNavigation();
   }
+  updateShot(now);
   updateRipples(elapsed);
   updateTraffic(dt, elapsed);
   coast.update(elapsed);
