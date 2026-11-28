@@ -182,6 +182,7 @@ player.rotation.y = -Math.PI / 2;
 
 function motorcycle() {
   const group = new THREE.Group();
+  group.name = 'Motosiklet';
   mesh(.65, .65, 2.5, 0x252c30, 0, 1, 0, group);
   mesh(.7, .22, 1, 0x202020, 0, 1.5, .3, group);
   for (const z of [-1.1, 1.1]) {
@@ -192,6 +193,20 @@ function motorcycle() {
   }
   group.position.set(8, 0, 7);
   scene.add(group);
+
+  const modelScript = document.createElement('script');
+  modelScript.src = 'sehir-motor-model.js';
+  modelScript.addEventListener('load', () => {
+    const model = window.SehirMotorModel?.create(THREE);
+    if (!model) return;
+    for (const part of group.children) {
+      part.geometry.dispose();
+      part.material.dispose();
+    }
+    group.clear();
+    group.add(model);
+  }, { once: true });
+  document.head.append(modelScript);
   return { group, type: 'motor', speed: 0, label: 'Motor' };
 }
 function bmw(x, z, heading, model, color, police = false) {
