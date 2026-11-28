@@ -41,7 +41,7 @@
 <script src="../three.min.js"></script>
 <script src="bmw-araclari.js"></script>
 <script src="sehir-karakterleri.js?v=3"></script>
-<script src="sehir-bolge.js?v=2"></script>
+<script src="sehir-bolge.js?v=3"></script>
 <script src="sehir-binalari.js?v=2"></script>
 <script src="sehir-sahili.js?v=3"></script>
 <script src="sehir-tekneleri.js"></script>
@@ -128,7 +128,7 @@ const berthZ = 0;
 jetSki.group.position.set(SehirSahili.limitAt(berthZ) + 2.7, SehirSahili.waterLevel, berthZ);
 jetSki.group.rotation.y = -1.04;
 const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mesh(w,h,d,c,x=0,y=0,z=0,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));o.position.set(x,y,z);parent.add(o);return o}
-const region = SehirBolge.create(THREE, scene);
+const region = SehirBolge.create(THREE, scene, 'acilis-pist.jpg');
 const buildings = SehirBinalari.create(THREE, scene, (x, z) => (x <= -200 && z >= 200) || (x >= 200 && z <= -200));
 buildings.push(...region.bounds);
 const flight = SehirUcus.create(THREE, region.flight, SehirHavaAraclari.create(THREE, scene), buildings, distantWorld.heightAt);

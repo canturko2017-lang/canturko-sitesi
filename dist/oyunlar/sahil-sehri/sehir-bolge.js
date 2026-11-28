@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  function create(THREE, scene) {
+  function create(THREE, scene, airportPhoto) {
     const district = new THREE.Group();
     district.name = 'Güneş Körfezi ve çöl mahallesi';
     scene.add(district);
@@ -369,6 +369,27 @@
     box(0x315b61, 331, 2.8, -230, 13.18, 1.72, .24);
     for (const side of [-1, 1]) box(0x7b9090, 331 + side * 5.3, 1.62, -230, .15, 3.24, .15);
     banner('TERMİNAL  ↖', 331, 2.8, -229.87, 13.14, 1.66, '#315b61', 86);
+
+    if (airportPhoto) {
+      const x = 304.8;
+      const z = -260.6;
+      const width = 10;
+      const height = width * 9 / 16;
+      const bottom = 1.65;
+      const y = bottom + height / 2;
+      box(0x304951, x, y, z, width + .38, height + .38, .26);
+      for (const offset of [-3.8, 3.8]) {
+        box(0x789098, x + offset, bottom / 2, z, .26, bottom, .26);
+        solid(x + offset, z, .26, bottom, .26);
+      }
+      new THREE.TextureLoader().load(airportPhoto, map => {
+        map.colorSpace = THREE.SRGBColorSpace;
+        const photo = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
+        photo.name = 'Havalimanı fotoğrafı';
+        photo.position.set(x, y, z + .14);
+        district.add(photo);
+      });
+    }
 
     function boardingSign(title, x, z, width, yaw) {
       const rows = Array.isArray(title) ? title : [title];
