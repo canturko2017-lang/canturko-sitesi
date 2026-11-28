@@ -1,0 +1,576 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sahil Şehri – Oyunu oyna</title><link rel="canonical" href="https://canturko.com/oyunlar/sahil-sehri/"><style>
+*{box-sizing:border-box}body{margin:0;background:#151b21;color:white;font-family:Arial,sans-serif;overflow:hidden}canvas{display:block}.hud{position:absolute;inset:20px auto auto 20px;padding:15px 18px;background:#101820df;border-left:4px solid #efbb50;max-width:340px;text-shadow:1px 2px 3px #000}.hud h1{font-size:30px;font-weight:900;letter-spacing:-1px;margin:0 0 10px;color:white;text-shadow:-1px -1px #111,2px 2px #111,3px 3px #111}.hud h1 span{color:#87b681;font-size:38px}.hud p{font-size:14px;line-height:1.5;margin:5px 0}.health{color:#ff7777}.mission{color:#ffdc78}.bottom{position:absolute;bottom:20px;left:20px;background:#101820df;padding:12px;line-height:1.6;font-size:12px}.status{position:absolute;right:20px;top:20px;text-align:right;background:#101820df;padding:12px}.cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;text-shadow:0 1px 5px black;pointer-events:none}.inventory{position:absolute;inset:0;display:none;place-items:center;background:#08101bd9}.inventory.open{display:grid}.inventory div{background:#18222a;padding:30px;max-width:460px;width:90%;border:1px solid #d5ae60}.inventory button{display:block;background:#344754;color:white;border:0;padding:12px;width:100%;margin:8px 0;text-align:left;cursor:pointer}.notice{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);background:#111d;padding:10px;white-space:nowrap}.error{position:absolute;inset:0;background:#221a1a;padding:40px;display:none} @media(max-width:650px){.bottom{font-size:10px}.hud{max-width:250px}.status{top:auto;bottom:20px}}
+
+.shore-nav,.vehicle-action,.touch-controls button{background:#102432e8;color:#fff;border:1px solid #aac6c8;border-radius:9px;font:700 14px Arial,sans-serif}
+.shore-nav{position:absolute;top:20px;left:50%;transform:translateX(-50%);padding:9px 13px;white-space:nowrap}
+#shoreArrow{display:inline-block;margin-right:6px;color:#ffdc78}.vehicle-action{position:absolute;bottom:24px;right:20px;padding:13px 16px;cursor:pointer}.vehicle-action:disabled{opacity:.65;cursor:default}
+#shoreArrow[hidden]{display:none}
+.portal-back{display:inline-block;margin-top:5px;color:#dceaf0;font-size:12px}.portal-back:hover,.portal-back:focus-visible{color:#ffdc78}
+.touch-controls{display:none}canvas{touch-action:none}
+.notice:empty{display:none}
+.inv-open .vehicle-action,.inv-open .touch-controls,.city-ended .vehicle-action,.city-ended .touch-controls{display:none}
+.destination{margin-left:8px;border:1px solid #668b95;border-radius:5px;padding:3px 5px;background:#153340;color:#fff;font:inherit;font-size:12px}
+.drive-readout{position:absolute;right:20px;bottom:79px;padding:9px 13px;background:#102432e8;border:1px solid #668b95;border-radius:9px;font-size:14px;text-align:right}
+.drive-readout strong{display:block;font-size:20px}.end-screen{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:#0c1b28ba;padding:20px}
+.end-screen[hidden],.drive-readout[hidden]{display:none}.end-screen section{max-width:410px;padding:28px;background:#112a39;border:1px solid #82a9a7;border-top:5px solid #ffca73;border-radius:12px}.end-screen h2{margin:0 0 12px;font-size:clamp(28px,6vw,48px)}.end-screen p{line-height:1.45}.end-screen button{background:#ffca73;color:#172631;border:0;padding:10px 14px;border-radius:6px;font:700 15px Arial,sans-serif;cursor:pointer}
+@media(max-width:740px){.shore-nav .destination{display:block;margin:6px 0 0 auto}.status{margin-top:27px}.drive-readout{right:8px;bottom:65px;font-size:12px}}
+@media(max-width:740px){.shore-nav{top:8px;left:auto;right:8px;transform:none}.vehicle-action{bottom:12px;right:8px}.status{top:54px;right:8px;bottom:auto}.hud{top:8px;left:8px;max-width:49vw;padding:7px 9px}.hud h1,.hud h1 span{font-size:clamp(13px,4.1vw,28px)}.hud p{font-size:12px;margin:3px 0}.bottom{bottom:10px;left:8px;max-width:53vw}.notice{bottom:78px;max-width:90vw;white-space:normal;text-align:center}}
+@media(pointer:coarse){.bottom{display:none}.touch-controls{position:absolute;left:12px;bottom:14px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}.touch-controls button{font-size:22px;touch-action:none}.touch-controls button[data-move=w]{grid-column:2}.touch-controls button[data-move=a]{grid-row:2}.touch-controls button[data-move=s]{grid-row:2;grid-column:2}.touch-controls button[data-move=d]{grid-row:2;grid-column:3}.touch-controls button.active{background:#315b64}}
+</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü veya sür · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · G: el hareketi · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="airport">Havalimanı</option><option value="desert">Çöl kasabası</option></select></div>
+<div id="citySpeed" class="drive-readout" hidden><strong id="speedValue">0 km/sa</strong><span id="carName"></span></div>
+<button class="vehicle-action" id="vehicleAction" type="button" disabled>Araca bin (F)</button>
+<div class="touch-controls" aria-label="Hareket düğmeleri"><button type="button" data-move="w" aria-label="İleri">↑</button><button type="button" data-move="a" aria-label="Sol">←</button><button type="button" data-move="s" aria-label="Geri">↓</button><button type="button" data-move="d" aria-label="Sağ">→</button></div>
+<div class="notice" id="notice">Kamera için oyun ekranına tıkla.</div><div class="inventory" id="inventory"><div><h2>ENVANTER</h2><p>Bir silah seç. V veya Tab ile kapat.</p><button data-weapon="Tabanca">1 — Tabanca</button><button data-weapon="Hafif makineli">2 — Hafif makineli</button><button data-weapon="Yumruk">3 — Yumruk</button></div></div><div class="error" id="error">3B oyun yüklenemedi. Sayfayı yenileyip yeniden deneyebilirsin.</div>
+<div class="end-screen" id="endScreen" role="dialog" aria-modal="true" aria-labelledby="endTitle" hidden>
+  <section><h2 id="endTitle">Görev sona erdi</h2><p>Karakterinin canı bitti. Şehre dönüp görevi yeniden deneyebilirsin.</p><button id="restart" type="button">Yeniden başla</button></section>
+</div>
+<script src="../three.min.js"></script>
+<script src="bmw-araclari.js"></script>
+<script src="sehir-karakterleri.js"></script>
+<script src="sehir-bolge.js"></script>
+<script src="sehir-binalari.js"></script>
+<script src="sehir-sahili.js"></script>
+<script src="sehir-tekneleri.js"></script>
+<script>
+'use strict';
+
+if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari){document.querySelector('#error').style.display='block'}else{
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8bd1f2);
+scene.fog = new THREE.Fog(0xc4e4ef, 115, 740);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .12, 1350);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe8f6ff, 0x9f8966, 1.86));
+const sun = new THREE.DirectionalLight(0xffefcf, 2.25);
+sun.position.set(.62, .63, -.46);
+scene.add(sun);
+const sky = new THREE.Mesh(new THREE.SphereGeometry(975, 36, 20), new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  depthWrite: false,
+  uniforms: { sunDirection: { value: sun.position.clone().normalize() } },
+  vertexShader: `
+    varying vec3 skyPosition;
+    void main() {
+      skyPosition = position;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: `
+    uniform vec3 sunDirection;
+    varying vec3 skyPosition;
+    void main() {
+      vec3 direction = normalize(skyPosition);
+      float altitude = clamp(direction.y, 0.0, 1.0);
+      float sunAngle = max(dot(direction, sunDirection), 0.0);
+      vec3 horizon = vec3(.59, .82, .92);
+      vec3 upperSky = vec3(.055, .37, .76);
+      vec3 color = mix(horizon, upperSky, pow(altitude, .55));
+      color += pow(sunAngle, 28.0) * vec3(.13, .096, .065);
+      color += smoothstep(.99940, .99969, sunAngle) * vec3(.86, .77, .53);
+      gl_FragColor = vec4(color, 1.0);
+      #include <colorspace_fragment>
+    }`
+}));
+sky.renderOrder = -10;
+scene.add(sky);
+const coast = SehirSahili.create(THREE, scene);
+const boats = SehirTekneleri.create(THREE, scene);
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mesh(w,h,d,c,x=0,y=0,z=0,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));o.position.set(x,y,z);parent.add(o);return o}
+const region = SehirBolge.create(THREE, scene);
+const buildings = SehirBinalari.create(THREE, scene, (x, z) => (x <= -200 && z >= 200) || (x >= 200 && z <= -200));
+buildings.push(...region.bounds);
+function makeRoadSign(x, z, heading, text) {
+  const sign = new THREE.Group();
+  sign.position.set(x, 0, z);
+  sign.rotation.y = heading;
+  scene.add(sign);
+  for (const side of [-1, 1]) mesh(.1, 2.4, .11, 0x6f8990, side * 1.22, 1.2, 0, sign);
+  mesh(3.3, .94, .14, 0x1b525a, 0, 2.42, 0, sign);
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 144;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#194e58';
+  context.fillRect(0, 0, 512, 144);
+  context.strokeStyle = '#d4e8e4';
+  context.lineWidth = 4;
+  context.strokeRect(10, 10, 492, 124);
+  context.fillStyle = '#fffdf1';
+  context.font = 'bold 60px Arial';
+  context.textAlign = 'center';
+  context.fillText(text, 256, 94, 455);
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(3.25, .9), new THREE.MeshBasicMaterial({ map }));
+  face.position.set(0, 2.42, .075);
+  sign.add(face);
+}
+makeRoadSign(14, 11.7, -Math.PI / 2, 'KUMSAL ↑');
+makeRoadSign(388, 11.7, -Math.PI / 2, 'KUMSAL ↑');
+makeRoadSign(311, -215, 0, 'HAVALİMANI ↑');
+makeRoadSign(-247, 212, Math.PI, 'ÇÖL KASABASI ↑');
+const people = SehirKarakterleri.profiles;
+let selected = 0;
+let strideProgress = 0;
+let strideAmount = 0;
+const player = new THREE.Group();
+const avatars = people.map(person => SehirKarakterleri.create(THREE, person));
+avatars.forEach((avatar, index) => {
+  avatar.visible = index === selected;
+  player.add(avatar);
+});
+scene.add(player);
+player.position.set(-4.6, 0, 2);
+player.rotation.y = -Math.PI / 2;
+
+function motorcycle() {
+  const group = new THREE.Group();
+  mesh(.65, .65, 2.5, 0x252c30, 0, 1, 0, group);
+  mesh(.7, .22, 1, 0x202020, 0, 1.5, .3, group);
+  for (const z of [-1.1, 1.1]) {
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(.55, .16, 8, 16), mat(0x171717));
+    wheel.rotation.y = Math.PI / 2;
+    wheel.position.set(0, .55, z);
+    group.add(wheel);
+  }
+  group.position.set(8, 0, 7);
+  scene.add(group);
+  return { group, type: 'motor', speed: 0, label: 'Motor' };
+}
+function bmw(x, z, heading, model, color, police = false) {
+  const group = BMWAraclari.create(THREE, { color, model, police });
+  group.position.set(x, 0, z);
+  group.rotation.y = heading;
+  scene.add(group);
+  return { group, type: 'araba', model, speed: 0, label: `BMW ${model}`, police };
+}
+const vehicles = [
+  bmw(0, 0, -Math.PI / 2, 'M4', 0xc41e2d),
+  motorcycle(),
+  bmw(-80, 10, Math.PI, 'M5', 0x325c94),
+  bmw(401, 27, Math.PI, 'M3', 0x66874c),
+  bmw(-233, 230, Math.PI / 2, 'M4', 0xd2a530),
+  bmw(327, -238, -Math.PI / 2, 'M5', 0x2c465e),
+];
+let current = null;
+
+const traffic = [
+  { x: 94, z: 4.5, lane: 'east', pace: 16, model: 'M5', color: 0x5f7185 },
+  { x: 63, z: -4.5, lane: 'west', pace: 15, model: 'M3', color: 0xbabfc3 },
+  { x: -270, z: 84, lane: 'east', pace: 18, model: 'M3', color: 0x375989 },
+  { x: 40, z: 76, lane: 'west', pace: 16, model: 'M4', color: 0xb0b3bb },
+  { x: 186, z: -76, lane: 'east', pace: 14, model: 'M5', color: 0x40545d },
+  { x: -185, z: -84, lane: 'west', pace: 15, model: 'M3', color: 0x725239 },
+  { x: -76, z: 137, lane: 'north', pace: 17, model: 'M5', color: 0x2b384e, police: true },
+  { x: -84, z: -130, lane: 'south', pace: 13, model: 'M4', color: 0x848d9e },
+  { x: 84, z: -163, lane: 'north', pace: 17, model: 'M3', color: 0x975745 },
+  { x: 76, z: 318, lane: 'south', pace: 15, model: 'M5', color: 0xabaa94 },
+  { x: 300, z: 164, lane: 'west', pace: 16, model: 'M4', color: 0xd3d6db },
+  { x: 333, z: -244, lane: 'park', pace: 0, model: 'M5', color: 0x30394a, police: true },
+].map(({ x, z, lane, pace, model, color, police }) => {
+  const heading = { east: -Math.PI/2, west: Math.PI/2, north: 0, south: Math.PI, park: 0 }[lane];
+  return { ...bmw(x, z, heading, model, color, police), x, z, lane, pace, heading };
+});
+
+const uniform = { jacket: 0x25354b, shirt: 0x536375, pants: 0x232f41, uniform: true };
+const policeOfficers = [[315, -251, Math.PI], [330, -249, Math.PI * .8], [-89, 55, -Math.PI / 2]].map(([x, z, yaw]) => {
+  const officer = SehirKarakterleri.create(THREE, uniform);
+  officer.position.set(x, 0, z);
+  officer.rotation.y = yaw;
+  scene.add(officer);
+  return officer;
+});
+
+const marker = new THREE.Mesh(new THREE.TorusGeometry(5,.3,8,40),new THREE.MeshBasicMaterial({color:0xffd153}));
+marker.rotation.x = Math.PI / 2;
+marker.position.set(160,.2,-160);
+scene.add(marker);
+const enemies = Array.from({ length: 3 }, (_, index) => {
+  const opponent = SehirKarakterleri.create(THREE, { ...people[index], jacket: 0x743e43, shirt: 0x695459 });
+  opponent.position.set(160 + (index - 1) * 7, 0, -172);
+  opponent.rotation.y = Math.PI;
+  scene.add(opponent);
+  return opponent;
+});
+let stage=0,health=100,money=0,weapon='Tabanca',ammo=30,inventory=false,yaw=-Math.PI/2,last=performance.now(),nextShot=0,damageAt=0,gestureUntil=0;const keys={};const $=s=>document.querySelector(s);const mission=$('#mission'),notice=$('#notice');function ui(){mission.textContent=['Görev: Bir araca yaklaş ve F ile bin.','Görev: Sarı halkadaki limana git.','Görev: Limandaki rakipleri geç.','Görev: Paketi sarı halkaya ulaştır.','Görev tamamlandı! Şehri keşfet.','Görev sona erdi.'][stage];$('#health').textContent=health;$('#money').textContent=money;$('#character').textContent='Karakter: '+people[selected].name;$('#weapon').textContent=weapon+(weapon==='Yumruk'?'':' · '+ammo+' mermi')}ui();function toggleInventory(){inventory=!inventory;document.body.classList.toggle('inv-open',inventory);if(inventory)clearMovement();$('#inventory').classList.toggle('open',inventory);if(inventory)document.exitPointerLock?.()}function chooseWeapon(w){weapon=w;ui();if(inventory)toggleInventory()}document.querySelectorAll('[data-weapon]').forEach(b=>b.onclick=()=>chooseWeapon(b.dataset.weapon));
+const motionKeys = { arrowup: 'w', arrowdown: 's', arrowleft: 'a', arrowright: 'd' };
+const arrows = { w: 'arrowup', s: 'arrowdown', a: 'arrowleft', d: 'arrowright' };
+const touchKeys = new Map();
+const walkingDirection = new THREE.Vector3();
+const cameraAnchor = new THREE.Vector3();
+const cameraFocus = new THREE.Vector3();
+const cameraRay = new THREE.Ray();
+const cameraHit = new THREE.Vector3();
+const buildingBox = new THREE.Box3();
+const up = new THREE.Vector3(0, 1, 0);
+const vehicleAction = $('#vehicleAction');
+const shoreDistance = $('#shoreDistance');
+const shoreArrow = $('#shoreArrow');
+const destination = $('#destination');
+const speedPanel = $('#citySpeed');
+const speedValue = $('#speedValue');
+const carName = $('#carName');
+const endScreen = $('#endScreen');
+const coarsePointer = matchMedia('(pointer: coarse)');
+const roadEnd = 400;
+const beachEntryX = 414;
+const destinations = {
+  shore: { label: 'Kumsal', x: beachEntryX },
+  airport: { label: 'Havalimanı', x: 320, z: -240 },
+  desert: { label: 'Çöl kasabası', x: -320, z: 320 },
+};
+let cameraPitch = .32;
+let noticeTimer;
+
+function explain(text) {
+  notice.textContent = text;
+  clearTimeout(noticeTimer);
+  if (text) noticeTimer = setTimeout(() => { notice.textContent = ''; }, 2900);
+}
+
+function nearestVehicle() {
+  let nearest = null;
+  let range = 36;
+  for (const candidate of vehicles) {
+    const distance = candidate.group.position.distanceToSquared(player.position);
+    if (distance >= range) continue;
+    range = distance;
+    nearest = candidate;
+  }
+  return nearest;
+}
+
+function vehicleContains(vehicle, x, z, padding) {
+  const { position, rotation } = vehicle.group;
+  const dx = x - position.x;
+  const dz = z - position.z;
+  const cos = Math.cos(rotation.y);
+  const sin = Math.sin(rotation.y);
+  const { width = 1.1, length = 3.34 } = vehicle.group.userData.metrics ?? {};
+  return Math.abs(dx * cos - dz * sin) < width / 2 + padding &&
+    Math.abs(dx * sin + dz * cos) < length / 2 + padding;
+}
+
+function interact() {
+  if (inventory || stage === 5) return;
+  if (current) {
+    const vehicle = current;
+    const { position, rotation } = vehicle.group;
+    const cos = Math.cos(rotation.y);
+    const sin = Math.sin(rotation.y);
+    const door = vehicle.type === 'araba' ? 1.95 : 1.35;
+    vehicle.speed = 0;
+    const safeExit = [[-door, 0], [door, 0], [0, 3.75], [0, -3.75]].find(([side, along]) => {
+      const x = position.x + side * cos + along * sin;
+      const z = position.z - side * sin + along * cos;
+      return z >= -roadEnd && z <= roadEnd && !blocked(x, z, null);
+    });
+    if (!safeExit) {
+      explain('İnebilmek için aracı biraz açık bir yere çek.');
+      return;
+    }
+    const [side, along] = safeExit;
+    player.position.set(position.x + side * cos + along * sin, 0, position.z - side * sin + along * cos);
+    player.rotation.y = yaw;
+    player.visible = true;
+    current = null;
+    clearMovement();
+    explain('Araç park edildi. Yürüyerek devam edebilirsin.');
+  } else {
+    const nextVehicle = nearestVehicle();
+    if (!nextVehicle) {
+      explain('Araca biraz daha yaklaş.');
+      return;
+    }
+    current = nextVehicle;
+    current.speed = 0;
+    yaw = current.group.rotation.y;
+    player.visible = false;
+    player.position.copy(current.group.position);
+    clearMovement();
+    explain('');
+    if (stage === 0) { stage = 1; ui(); }
+  }
+  updateNavigation();
+}
+
+function updateNavigation() {
+  const action = current ? 'Araçtan in' : 'Araca bin';
+  const label = coarsePointer.matches ? action : `${action} (F)`;
+  if (vehicleAction.textContent !== label) vehicleAction.textContent = label;
+  vehicleAction.disabled = !current && !nearestVehicle();
+  const { x, z } = player.position;
+  const target = destinations[destination.value];
+  const dx = target.x - x;
+  const dz = (target.z ?? z) - z;
+  const distance = target === destinations.shore ? Math.max(0, Math.round(dx)) : Math.round(Math.hypot(dx, dz));
+  const arrived = target === destinations.shore ? distance === 0 : distance <= 12;
+  const description = arrived ? target.label : `${target.label} · ${distance} m`;
+  if (shoreDistance.textContent !== description) shoreDistance.textContent = description;
+  shoreArrow.hidden = arrived;
+  if (!arrived) {
+    const bearing = Math.atan2(-dx, -dz);
+    shoreArrow.style.transform = `rotate(${(yaw - bearing) * 180 / Math.PI}deg)`;
+  }
+  speedPanel.hidden = !current;
+  if (current) {
+    const readout = `${Math.round(Math.abs(current.speed) * 3.6)} km/sa`;
+    if (speedValue.textContent !== readout) speedValue.textContent = readout;
+    if (carName.textContent !== current.label) carName.textContent = current.label;
+  }
+}
+
+function clearMovement() {
+  for (const key of Object.keys(keys)) keys[key] = false;
+  for (const [id, button] of touchKeys) {
+    if (button.hasPointerCapture(id)) button.releasePointerCapture(id);
+    button.classList.remove('active');
+  }
+  touchKeys.clear();
+}
+
+function held(key) {
+  if (keys[key] || keys[arrows[key]]) return true;
+  for (const button of touchKeys.values()) {
+    if (button.dataset.move === key) return true;
+  }
+  return false;
+}
+
+vehicleAction.addEventListener('click', interact);
+destination.addEventListener('change', () => {
+  destination.blur();
+  updateNavigation();
+});
+$('#restart').addEventListener('click', () => location.reload());
+for (const button of document.querySelectorAll('[data-move]')) {
+  button.addEventListener('pointerdown', event => {
+    event.preventDefault();
+    button.setPointerCapture(event.pointerId);
+    touchKeys.set(event.pointerId, button);
+    button.classList.add('active');
+  });
+  for (const type of ['pointercancel', 'pointerup', 'lostpointercapture']) {
+    button.addEventListener(type, event => {
+      touchKeys.delete(event.pointerId);
+      if (![...touchKeys.values()].includes(button)) button.classList.remove('active');
+    });
+  }
+}
+addEventListener('keydown', event => {
+  const original = event.key.toLowerCase();
+  if (stage === 5) {
+    if (original === 'r') location.reload();
+    return;
+  }
+  if (event.target === destination) return;
+  const key = motionKeys[original] || original;
+  if (event.target === vehicleAction && key === ' ') return;
+  if (motionKeys[original] || ['tab', ' '].includes(key)) event.preventDefault();
+  if (event.repeat) return;
+  if (key === 'v' || key === 'tab') { toggleInventory(); return; }
+  if (inventory) {
+    if (['1', '2', '3'].includes(key)) chooseWeapon(['Tabanca', 'Hafif makineli', 'Yumruk'][Number(key)-1]);
+    return;
+  }
+  keys[original] = true;
+  if (key === 'f') interact();
+  if (key === 'e') shoot();
+  if (key === 'g') { gestureUntil = performance.now()+1600; explain('El hareketi!'); }
+  if (['1', '2', '3'].includes(key)) {
+    selected = Number(key)-1;
+    avatars.forEach((avatar, index) => { avatar.visible = index === selected; });
+    ui();
+  }
+  if (key === 'r') location.reload();
+});
+addEventListener('keyup', event => { keys[event.key.toLowerCase()] = false; });
+addEventListener('blur', clearMovement);
+const canvas = renderer.domElement;
+function aim(dx, dy) {
+  yaw -= dx * .0035;
+  cameraPitch = THREE.MathUtils.clamp(cameraPitch + dy * .0035, -.02, .88);
+}
+addEventListener('mousemove', event => {
+  if (document.pointerLockElement === canvas && !inventory) aim(event.movementX, event.movementY);
+});
+let drag = null;
+canvas.addEventListener('pointerdown', event => {
+  if (inventory || event.button !== 0) return;
+  if (event.pointerType === 'mouse' && document.pointerLockElement === canvas) {
+    shoot();
+    return;
+  }
+  if (event.pointerType === 'mouse' && canvas.requestPointerLock) {
+    Promise.resolve(canvas.requestPointerLock()).catch(() => {});
+  }
+  canvas.setPointerCapture(event.pointerId);
+  drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+});
+canvas.addEventListener('pointermove', event => {
+  if (event.pointerId !== drag?.id || inventory || document.pointerLockElement === canvas) return;
+  aim(event.clientX - drag.x, event.clientY - drag.y);
+  drag.x = event.clientX;
+  drag.y = event.clientY;
+});
+canvas.addEventListener('lostpointercapture', event => {
+  if (event.pointerId === drag?.id) drag = null;
+});
+function shoot(){if(current||inventory||stage!==2||performance.now()<nextShot)return;nextShot=performance.now()+250;if(weapon!=='Yumruk'){if(ammo<=0){notice.textContent='Mermi bitti! R ile yeniden başlat.';return}ammo--}ui();const origin=player.position.clone().add(new THREE.Vector3(0,1.5,0));const direction=new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0),yaw);const candidates=enemies.filter(e=>e.visible).map(e=>{const delta=e.position.clone().sub(player.position);const distance=delta.length();return {e,distance,angle:delta.normalize().dot(direction)}}).filter(x=>x.distance<(weapon==='Yumruk'?4:65)&&x.angle>.96).sort((a,b)=>a.distance-b.distance);if(candidates.length){const e=candidates[0].e;e.visible=false;if(stage===2&&enemies.every(x=>!x.visible)){stage=3;marker.visible=true;marker.position.set(-160,.2,160);ui()}}}
+function blocked(x, z, vehicle) {
+  const clearance = vehicle ? (vehicle.type === 'araba' ? 1.06 : .72) : .48;
+  const east = vehicle ? 418 : SehirSahili.limitAt(z) - .9;
+  if (x < -roadEnd || x > east) return true;
+  if (buildings.some(b => Math.abs(x - b.x) < b.halfWidth + clearance && Math.abs(z - b.z) < b.halfDepth + clearance)) return true;
+  return vehicles.some(parked => parked !== vehicle && vehicleContains(parked, x, z, clearance)) ||
+    traffic.some(car => vehicleContains(car, x, z, clearance));
+}
+
+function move(obj, dx, dz, vehicle = null) {
+  const { position } = obj;
+  const oldX = position.x;
+  const oldZ = position.z;
+  const nextX = position.x + dx;
+  const nextZ = THREE.MathUtils.clamp(position.z + dz, -roadEnd, roadEnd);
+  if (!blocked(nextX, position.z, vehicle)) position.x = nextX;
+  if (!blocked(position.x, nextZ, vehicle)) position.z = nextZ;
+  return Math.hypot(position.x - oldX, position.z - oldZ);
+}
+
+function updateMovement(dt) {
+  const forward = Number(Boolean(held('w'))) - Number(Boolean(held('s')));
+  const steer = Number(Boolean(held('d'))) - Number(Boolean(held('a')));
+  let walked = 0;
+  if (current) {
+    const car = current.type === 'araba';
+    const targetSpeed = forward > 0 ? (car ? 43 : 26) : forward < 0 ? -9 : 0;
+    const response = forward ? 1.05 : 1.62;
+    current.speed += (targetSpeed - current.speed) * (1 - Math.exp(-dt * response));
+    const grip = THREE.MathUtils.lerp(1.92, .98, Math.min(Math.abs(current.speed) / 42, 1));
+    const turn = -steer * dt * grip * Math.min(Math.abs(current.speed) / 4, 1) * Math.sign(current.speed);
+    current.group.rotation.y += turn;
+    yaw += turn;
+    const heading = current.group.rotation.y;
+    const moved = move(current.group, -Math.sin(heading) * current.speed * dt, -Math.cos(heading) * current.speed * dt, current);
+    if (moved < .002) current.speed = 0;
+    player.position.copy(current.group.position);
+  } else if (forward || steer) {
+    walkingDirection.set(steer, 0, -forward).normalize().applyAxisAngle(up, yaw);
+    const stride = (keys.shift ? 13 : 8) * dt;
+    walked = move(player, walkingDirection.x * stride, walkingDirection.z * stride);
+    player.rotation.y = Math.atan2(-walkingDirection.x, -walkingDirection.z);
+  }
+  strideProgress += walked * 4.4;
+  strideAmount += ((walked > .002 ? .53 : 0) - strideAmount) * Math.min(1, dt * 12);
+}
+
+function updateTraffic(dt, elapsed) {
+  const wrap = value => THREE.MathUtils.euclideanModulo(value + 405, 810) - 405;
+  for (const car of traffic) {
+    const { group, pace, heading } = car;
+    if (pace) {
+      const nextX = wrap(group.position.x - Math.sin(heading) * pace * dt);
+      const nextZ = wrap(group.position.z - Math.cos(heading) * pace * dt);
+      const pedestrian = !current && Math.hypot(nextX - player.position.x, nextZ - player.position.z) < 3.4;
+      if (!pedestrian && !vehicles.some(vehicle => vehicleContains(vehicle, nextX, nextZ, 2.1))) {
+        group.position.set(nextX, 0, nextZ);
+      }
+    }
+    group.visible = group.position.distanceToSquared(player.position) < 165 ** 2;
+    if (group.visible && car.police && pace) {
+      const redFlash = elapsed % 1.12 < .56;
+      group.userData.sirenRed.emissiveIntensity = redFlash ? 1.3 : .12;
+      group.userData.sirenBlue.emissiveIntensity = redFlash ? .12 : 1.3;
+    }
+  }
+  for (const officer of policeOfficers) officer.visible = officer.position.distanceToSquared(player.position) < 115 ** 2;
+}
+
+function finishRun() {
+  stage = 5;
+  ui();
+  clearMovement();
+  if (current) current.speed = 0;
+  player.visible = false;
+  document.exitPointerLock?.();
+  document.body.classList.add('city-ended');
+  endScreen.hidden = false;
+  $('#restart').focus();
+}
+
+function updateMission(now) {
+  const position = player.position;
+  if (stage === 1 && position.distanceTo(marker.position) < 8) {
+    stage = 2;
+    marker.visible = false;
+    ui();
+  }
+  if (stage === 2 && now - damageAt > 1800 && enemies.some(enemy => enemy.visible && enemy.position.distanceTo(position) < 35)) {
+    damageAt = now;
+    health = Math.max(0, health - 10);
+    if (health === 0) finishRun();
+    else ui();
+  }
+  if (stage === 3 && position.distanceTo(marker.position) < 8) {
+    stage = 4;
+    money = 500;
+    marker.visible = false;
+    ui();
+  }
+}
+
+function updateCityCamera(smoothing) {
+  const p = player.position;
+  const radius = current ? 15 : 10;
+  cameraAnchor.set(0, 2 + Math.sin(cameraPitch) * radius, Math.cos(cameraPitch) * radius);
+  cameraAnchor.applyAxisAngle(up, yaw).add(p);
+  camera.position.lerp(cameraAnchor, smoothing);
+  cameraFocus.set(p.x, p.y + 1.6, p.z);
+  cameraRay.origin.copy(cameraFocus);
+  cameraRay.direction.subVectors(camera.position, cameraFocus);
+  let visibleDistance = cameraRay.direction.length();
+  cameraRay.direction.normalize();
+  for (const { x, z, halfWidth, halfDepth, height = 23.8 } of buildings) {
+    if (Math.abs(p.x - x) > halfWidth + visibleDistance || Math.abs(p.z - z) > halfDepth + visibleDistance) continue;
+    buildingBox.min.set(x - halfWidth, -.1, z - halfDepth);
+    buildingBox.max.set(x + halfWidth, height, z + halfDepth);
+    if (cameraRay.intersectBox(buildingBox, cameraHit)) {
+      visibleDistance = Math.min(visibleDistance, Math.max(.5, cameraHit.distanceTo(cameraFocus) - .35));
+    }
+  }
+  cameraRay.at(visibleDistance, camera.position);
+  camera.lookAt(cameraFocus);
+  sky.position.copy(camera.position);
+}
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.max(0, Math.min((now - last) / 1000, .05));
+  last = now;
+  if (!inventory && stage !== 5) {
+    updateMovement(dt);
+    avatars[selected].userData.pose(Math.sin(strideProgress) * strideAmount, now < gestureUntil);
+    updateMission(now);
+    updateCityCamera(1 - Math.exp(-dt * 10));
+    updateNavigation();
+  }
+  const elapsed = now / 1000;
+  updateTraffic(dt, elapsed);
+  coast.update(elapsed);
+  boats.update(elapsed);
+  region.update(elapsed);
+  renderer.render(scene, camera);
+}
+updateCityCamera(1);
+updateNavigation();
+explain(coarsePointer.matches ? 'Kamerayı çevirmek için ekranı sürükle.' : 'Kamerayı çevirmek için oyun ekranına tıkla.');
+requestAnimationFrame(loop);
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+}
+</script></body></html>
