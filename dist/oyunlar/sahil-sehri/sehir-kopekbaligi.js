@@ -217,8 +217,8 @@
     shark.name = 'Sahildeki köpekbalığı';
     scene.add(shark);
 
-    // The loop stays landward of the central yacht. Arc-length sampling keeps its speed even through bends.
-    const anchors = [[17.7, -34], [17.1, -14], [16.3, 12], [13.6, 29], [11, 18], [11, -10], [12, -29], [14.8, -38]];
+    // Keep the patrol beyond the swimming area and on the seaward side of the central yacht.
+    const anchors = [[67, -40], [72, -22], [75, 7], [69, 35], [60, 45], [52, 26], [52, -4], [56, -32]];
     const points = anchors.map(([offshore, z]) => new THREE.Vector3(shore.limitAt(z) + offshore, 0, z));
     const patrol = new THREE.CatmullRomCurve3(points, true, 'centripetal');
     patrol.arcLengthDivisions = 320;
