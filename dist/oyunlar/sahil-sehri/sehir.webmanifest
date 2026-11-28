@@ -1,0 +1,15 @@
+{
+  "id": "./oyna.html",
+  "name": "Sahil Şehri",
+  "short_name": "Sahil Şehri",
+  "start_url": "./oyna.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#151b21",
+  "theme_color": "#151b21",
+  "lang": "tr",
+  "icons": [
+    { "src": "sahil-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "sahil-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

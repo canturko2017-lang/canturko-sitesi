@@ -1,5 +1,5 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sahil Şehri – Oyunu oyna</title><link rel="canonical" href="https://canturko.com/oyunlar/sahil-sehri/"><style>
-*{box-sizing:border-box}body{margin:0;background:#151b21;color:white;font-family:Arial,sans-serif;overflow:hidden}canvas{display:block}.hud{position:absolute;inset:20px auto auto 20px;padding:15px 18px;background:#101820df;border-left:4px solid #efbb50;max-width:340px;text-shadow:1px 2px 3px #000}.hud h1{font-size:30px;font-weight:900;letter-spacing:-1px;margin:0 0 10px;color:white;text-shadow:-1px -1px #111,2px 2px #111,3px 3px #111}.hud h1 span{color:#87b681;font-size:38px}.hud p{font-size:14px;line-height:1.5;margin:5px 0}.health{color:#ff7777}.mission{color:#ffdc78}.bottom{position:absolute;bottom:20px;left:20px;background:#101820df;padding:12px;line-height:1.6;font-size:12px}.status{position:absolute;right:20px;top:20px;text-align:right;background:#101820df;padding:12px}.cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;text-shadow:0 1px 5px black;pointer-events:none}.inventory{position:absolute;inset:0;display:none;place-items:center;background:#08101bd9}.inventory.open{display:grid}.inventory div{background:#18222a;padding:30px;max-width:460px;width:90%;border:1px solid #d5ae60}.inventory button{display:block;background:#344754;color:white;border:0;padding:12px;width:100%;margin:8px 0;text-align:left;cursor:pointer}.notice{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);background:#111d;padding:10px;white-space:nowrap}.error{position:absolute;inset:0;background:#221a1a;padding:40px;display:none} @media(max-width:650px){.bottom{font-size:10px}.hud{max-width:250px}.status{top:auto;bottom:20px}}
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Sahil Şehri – Oyunu oyna</title><link rel="canonical" href="https://canturko.com/oyunlar/sahil-sehri/"><style>
+*{box-sizing:border-box}body{margin:0;background:#151b21;color:white;font-family:Arial,sans-serif;overflow:hidden}canvas{display:block}.hud{position:absolute;inset:20px auto auto 20px;padding:15px 18px;background:#101820df;border-left:4px solid #efbb50;max-width:340px;text-shadow:1px 2px 3px #000}.hud h1{font-size:30px;font-weight:900;letter-spacing:-1px;margin:0 0 10px;color:white;text-shadow:-1px -1px #111,2px 2px #111,3px 3px #111}.hud h1 span{color:#87b681;font-size:38px}.hud p{font-size:14px;line-height:1.5;margin:5px 0}.health{color:#ff7777}.mission{color:#ffdc78}.bottom{position:absolute;bottom:20px;left:20px;background:#101820df;padding:12px;line-height:1.6;font-size:12px}.status{position:absolute;right:20px;top:20px;text-align:right;background:#101820df;padding:12px}.cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;text-shadow:0 1px 5px black;pointer-events:none}.inventory{position:absolute;inset:0;display:none;place-items:center;background:#08101bd9}.inventory.open{display:grid}.inventory div{background:#18222a;padding:30px;max-width:460px;width:90%;border:1px solid #d5ae60}.inventory button{display:block;background:#344754;color:white;border:0;padding:12px;width:100%;margin:8px 0;text-align:left;cursor:pointer}.notice{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);background:#111d;padding:10px;white-space:nowrap}.error{position:absolute;inset:0;background:#221a1a;padding:40px;display:none}
 
 .shore-nav,.vehicle-action,.touch-controls button{background:#102432e8;color:#fff;border:1px solid #aac6c8;border-radius:9px;font:700 14px Arial,sans-serif}
 .shore-nav{position:absolute;top:20px;left:50%;transform:translateX(-50%);padding:9px 13px;white-space:nowrap}
@@ -10,7 +10,6 @@
 .flight-panel{position:absolute;right:20px;bottom:148px;max-width:min(275px,calc(100vw - 42px));padding:11px 13px;border:1px solid #668b95;border-radius:9px;background:#102432ed;color:#e4f5f6;font:13px/1.45 Arial,sans-serif}
 .flight-panel[hidden]{display:none}.flight-panel strong{display:block;color:#fff}.flight-panel button{display:block;width:100%;margin-top:8px;padding:9px 12px;background:#aee5e8;border:0;border-radius:7px;color:#153040;font:700 13px Arial,sans-serif;cursor:pointer}.flight-panel button[disabled]{cursor:default;opacity:.65}
 .flight-panel button[hidden]{display:none}
-@media(max-width:740px){.flight-panel{right:8px;bottom:125px;max-width:173px}}
 .portal-back{display:inline-block;margin-top:5px;color:#dceaf0;font-size:12px}.portal-back:hover,.portal-back:focus-visible{color:#ffdc78}
 .touch-controls{display:none}canvas{touch-action:none}
 .notice:empty{display:none}
@@ -19,11 +18,16 @@
 .drive-readout{position:absolute;right:20px;bottom:79px;padding:9px 13px;background:#102432e8;border:1px solid #668b95;border-radius:9px;font-size:14px;text-align:right}
 .drive-readout strong{display:block;font-size:20px}.end-screen{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:#0c1b28ba;padding:20px}
 .end-screen[hidden],.drive-readout[hidden]{display:none}.end-screen section{max-width:410px;padding:28px;background:#112a39;border:1px solid #82a9a7;border-top:5px solid #ffca73;border-radius:12px}.end-screen h2{margin:0 0 12px;font-size:clamp(28px,6vw,48px)}.end-screen p{line-height:1.45}.end-screen button{background:#ffca73;color:#172631;border:0;padding:10px 14px;border-radius:6px;font:700 15px Arial,sans-serif;cursor:pointer}
-@media(max-width:740px){.shore-nav .destination{display:block;margin:6px 0 0 auto}.status{margin-top:27px}.drive-readout{right:8px;bottom:65px;font-size:12px}}
-@media(max-width:740px){.swimming .status{margin-top:47px}}
-@media(max-width:740px){.shore-nav{top:8px;left:auto;right:8px;transform:none}.vehicle-action{bottom:12px;right:8px}.status{top:54px;right:8px;bottom:auto}.hud{top:8px;left:8px;max-width:49vw;padding:7px 9px}.hud h1,.hud h1 span{font-size:clamp(13px,4.1vw,28px)}.hud p{font-size:12px;margin:3px 0}.bottom{bottom:10px;left:8px;max-width:53vw}.notice{bottom:78px;max-width:90vw;white-space:normal;text-align:center}}
-@media(pointer:coarse){.bottom{display:none}.touch-controls{position:absolute;left:12px;bottom:14px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}.touch-controls button{font-size:22px;touch-action:none}.touch-controls button[data-move=w]{grid-column:2}.touch-controls button[data-move=a]{grid-row:2}.touch-controls button[data-move=s]{grid-row:2;grid-column:2}.touch-controls button[data-move=d]{grid-row:2;grid-column:3}.touch-controls button.active{background:#315b64}}
-</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü, sür veya yüz · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · P: telefon · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="jetSki">Jet ski</option><option value="airport">Havalimanı</option><option value="airplane">Uçak</option><option value="helicopter">Helikopter</option><option value="desert">Çöl kasabası</option></select><span id="swimStatus" class="swim-status" role="status" hidden>Yüzüyorsun</span></div>
+</style>
+<link rel="stylesheet" href="sehir-ekran.css">
+<meta name="theme-color" content="#151b21">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sahil Şehri">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="sehir.webmanifest">
+<link rel="apple-touch-icon" sizes="192x192" href="sahil-192.png">
+</head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><label class="character-picker"><select id="characterSelect" aria-label="Karakter seç"></select></label><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü, sür veya yüz · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · P: telefon · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="jetSki">Jet ski</option><option value="airport">Havalimanı</option><option value="airplane">Uçak</option><option value="helicopter">Helikopter</option><option value="desert">Çöl kasabası</option></select><span id="swimStatus" class="swim-status" role="status" hidden>Yüzüyorsun</span></div>
+<div id="gameTools" class="game-tools" aria-label="Oyun araçları"><button id="fullscreenToggle" type="button" aria-pressed="false">Tam ekran</button></div>
 <div id="flightPanel" class="flight-panel" hidden><strong id="flightAltitude">0 m irtifa</strong><span id="flightHint">W / ↑ ile kalk</span><button id="flightLand" type="button" hidden>Otomatik iniş (L)</button></div>
 <div id="citySpeed" class="drive-readout" hidden><strong id="speedValue">0 km/sa</strong><span id="carName"></span></div>
 <button class="vehicle-action" id="vehicleAction" type="button" disabled>Araca bin (F)</button>
@@ -47,17 +51,30 @@
 <script src="sehir-uzak-dunya.js"></script>
 <script src="sehir-ucus.js?v=2"></script>
 <script src="sehir-telefon.js"></script>
+<script src="sehir-tam-ekran.js"></script>
 <script>
 'use strict';
 
-if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar || !window.SehirHavaAraclari || !window.SehirUzakDunya || !window.SehirUcus || !window.SehirTelefon){document.querySelector('#error').style.display='block'}else{
+if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar || !window.SehirHavaAraclari || !window.SehirUzakDunya || !window.SehirUcus || !window.SehirTelefon || !window.SehirTamEkran){document.querySelector('#error').style.display='block'}else{
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8bd1f2);
 scene.fog = new THREE.Fog(0xc4e4ef, 115, 740);
-const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .12, 1350);
+function gameViewport() {
+  const visible = window.visualViewport;
+  const flat = visible && Math.abs(visible.scale - 1) < .01;
+  return {
+    width: Math.max(1, Math.floor(flat ? visible.width : window.innerWidth)),
+    height: Math.max(1, Math.floor(flat ? visible.height : window.innerHeight)),
+  };
+}
+
+const initialViewport = gameViewport();
+const camera = new THREE.PerspectiveCamera(60, initialViewport.width / initialViewport.height, .12, 1350);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(pointer: coarse)').matches ? 1.5 : 1.75));
+renderer.setSize(initialViewport.width, initialViewport.height, false);
+document.body.style.setProperty('--game-width', `${initialViewport.width}px`);
+document.body.style.setProperty('--game-height', `${initialViewport.height}px`);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.prepend(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xe8f6ff, 0x9f8966, 1.86));
@@ -247,6 +264,8 @@ const flightPanel = $('#flightPanel');
 const flightAltitude = $('#flightAltitude');
 const flightHint = $('#flightHint');
 const flightLand = $('#flightLand');
+const characterSelect = $('#characterSelect');
+const fullscreenToggle = $('#fullscreenToggle');
 const kilometres = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 const coarsePointer = matchMedia('(pointer: coarse)');
 const roadEnd = 400;
@@ -298,6 +317,25 @@ const phone = SehirTelefon.create({
     if (open) document.exitPointerLock?.();
   },
 });
+
+$('#gameTools').append($('#sehir-phone-toggle'));
+const fullscreen = SehirTamEkran.create({ button: fullscreenToggle });
+fullscreenToggle.addEventListener('click', clearMovement, { capture: true });
+people.forEach((person, index) => characterSelect.add(new Option(person.name, String(index))));
+characterSelect.value = String(selected);
+characterSelect.addEventListener('change', () => {
+  chooseCharacter(Number(characterSelect.value));
+  clearMovement();
+  characterSelect.blur();
+});
+
+function chooseCharacter(index) {
+  if (!people[index]) return;
+  selected = index;
+  avatars.forEach((avatar, avatarIndex) => { avatar.visible = avatarIndex === selected; });
+  characterSelect.value = String(selected);
+  ui();
+}
 
 function nearestVehicle() {
   const jetDistance = Math.hypot(jetSki.group.position.x - player.position.x, jetSki.group.position.z - player.position.z);
@@ -485,8 +523,8 @@ addEventListener('keydown', event => {
     if (original === 'r') location.reload();
     return;
   }
-  if (original === 'p' && !event.repeat && !inventory) { event.preventDefault(); phone.toggle(); return; }
-  if (phone.isOpen() || event.target === destination) return;
+  if (original === 'p' && !event.repeat && !inventory && !fullscreen.isHelpOpen()) { event.preventDefault(); phone.toggle(); return; }
+  if (phone.isOpen() || fullscreen.isHelpOpen() || event.target === destination || event.target === characterSelect) return;
   const key = motionKeys[original] || original;
   if ((event.target === vehicleAction || event.target === flightLand) && key === ' ') return;
   if (motionKeys[original] || ['tab', ' '].includes(key)) event.preventDefault();
@@ -501,11 +539,7 @@ addEventListener('keydown', event => {
   if (key === 'l') requestLanding();
   if (key === 'e') shoot();
   if (key === 'g') { gestureUntil = performance.now()+1600; explain('El hareketi!'); }
-  if (['1', '2', '3'].includes(key)) {
-    selected = Number(key)-1;
-    avatars.forEach((avatar, index) => { avatar.visible = index === selected; });
-    ui();
-  }
+  if (['1', '2', '3'].includes(key)) chooseCharacter(Number(key) - 1);
   if (key === 'r') location.reload();
 });
 addEventListener('keyup', event => { keys[event.key.toLowerCase()] = false; });
@@ -520,7 +554,7 @@ addEventListener('mousemove', event => {
 });
 let drag = null;
 canvas.addEventListener('pointerdown', event => {
-  if (inventory || phone.isOpen() || event.button !== 0) return;
+  if (inventory || phone.isOpen() || fullscreen.isHelpOpen() || event.button !== 0) return;
   if (event.pointerType === 'mouse' && document.pointerLockElement === canvas) {
     shoot();
     return;
@@ -758,7 +792,7 @@ function loop(now) {
   const dt = Math.max(0, Math.min((now - last) / 1000, .05));
   last = now;
   const elapsed = now / 1000;
-  if (!inventory && !phone.isOpen() && stage !== 5) {
+  if (!inventory && !phone.isOpen() && !fullscreen.isHelpOpen() && stage !== 5) {
     updateMovement(dt, elapsed);
     updateMission(now);
     updateCityCamera(1 - Math.exp(-dt * 10));
@@ -780,10 +814,31 @@ updateCityCamera(1);
 updateNavigation();
 explain(coarsePointer.matches ? 'Kamerayı çevirmek için ekranı sürükle.' : 'Kamerayı çevirmek için oyun ekranına tıkla.');
 requestAnimationFrame(loop);
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+let resizePending = false;
+function scheduleGameResize() {
+  if (resizePending) return;
+  resizePending = true;
+  requestAnimationFrame(() => {
+    resizePending = false;
+    const { width, height } = gameViewport();
+    document.body.style.setProperty('--game-width', `${width}px`);
+    document.body.style.setProperty('--game-height', `${height}px`);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+  });
+}
+
+function resetControlsAndResize() {
+  clearMovement();
+  scheduleGameResize();
+}
+
+addEventListener('resize', scheduleGameResize);
+window.visualViewport?.addEventListener('resize', scheduleGameResize);
+screen.orientation?.addEventListener?.('change', resetControlsAndResize);
+addEventListener('orientationchange', resetControlsAndResize);
+document.addEventListener('fullscreenchange', resetControlsAndResize);
+document.addEventListener('webkitfullscreenchange', resetControlsAndResize);
 }
 </script></body></html>
