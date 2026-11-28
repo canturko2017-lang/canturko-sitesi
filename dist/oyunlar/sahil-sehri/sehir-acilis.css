@@ -1,0 +1,169 @@
+.sehir-acilis,
+.sehir-acilis * { box-sizing: border-box; }
+
+.sehir-acilis {
+  --ink: #fff7e8;
+  --gold: #ffd6a0;
+  --intro-progress: 10%;
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  isolation: isolate;
+  padding: max(clamp(19px, 6vw, 90px), env(safe-area-inset-top))
+    max(clamp(19px, 6vw, 90px), env(safe-area-inset-right))
+    max(clamp(22px, 5vw, 72px), calc(env(safe-area-inset-bottom) + 17px))
+    max(clamp(19px, 6vw, 90px), env(safe-area-inset-left));
+  color: var(--ink);
+  background: #142936;
+  font: 16px/1.45 Arial, sans-serif;
+  opacity: 1;
+  transition: opacity .34s ease-out;
+}
+
+.sehir-acilis:not([open]), .sehir-acilis [hidden] { display: none; }
+.sehir-acilis::backdrop { background: #142936; transition: opacity .34s ease-out; }
+.sehir-acilis.is-ending { opacity: 0; pointer-events: none; }
+.sehir-acilis.is-ending::backdrop { opacity: 0; }
+
+.sehir-acilis-frames,
+.sehir-acilis-frame,
+.sehir-acilis-shade { position: absolute; inset: 0; }
+
+.sehir-acilis-frames {
+  z-index: -3;
+  background: radial-gradient(ellipse at 81% 33%, #8a7774 0%, transparent 43%),
+    radial-gradient(ellipse at 61% 3%, #556d80 0%, transparent 56%),
+    linear-gradient(147deg, #173344 27%, #233d45 55%, #152633 56%, #10222d 100%);
+}
+
+.sehir-acilis-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity .75s ease-in-out;
+}
+
+.sehir-acilis-frame.is-on { opacity: 1; }
+
+.sehir-acilis-shade {
+  z-index: -2;
+  pointer-events: none;
+  background: linear-gradient(0deg, #102227ee 0%, #1022278f 19%, transparent 54%),
+    linear-gradient(103deg, #111c25bd 0%, #14263054 45%, transparent 80%);
+}
+
+.sehir-acilis-heading {
+  align-self: center;
+  justify-self: start;
+  max-width: 100%;
+  margin: 0 0 clamp(22px, 11vh, 150px);
+}
+
+.sehir-acilis-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(3rem, 9vw, 9.2rem);
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.072em;
+  text-shadow: 0 2px 21px #141d21a0;
+  outline: none;
+}
+
+.sehir-acilis-heading h2 span { display: inline-block; }
+.sehir-acilis-heading h2 span:last-child { color: #ffdfb6; }
+
+.sehir-acilis-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 15px;
+}
+
+.sehir-acilis-status {
+  width: min(410px, 62vw);
+  text-shadow: 0 1px 4px #0b151b;
+}
+
+.sehir-acilis-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 13px;
+  margin-bottom: 9px;
+  white-space: nowrap;
+}
+
+.sehir-acilis-label { color: #fff7e8; font-weight: 700; letter-spacing: .045em; }
+.sehir-acilis-number { color: var(--gold); font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.sehir-acilis-percent { font-size: .62em; margin-left: 2px; }
+
+.sehir-acilis-track {
+  height: 3px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff7e857;
+}
+
+.sehir-acilis-track::before {
+  content: '';
+  display: block;
+  width: var(--intro-progress);
+  height: 100%;
+  border-radius: inherit;
+  background: #ffdcaa;
+  transition: width .4s ease-out;
+}
+
+.sehir-acilis-preparing { margin: 8px 0 0; color: #fff1d8; font-size: 14px; }
+
+.sehir-acilis-skip {
+  min-width: 69px;
+  min-height: 45px;
+  padding: 8px 15px;
+  border: 1px solid #fff7e89e;
+  border-radius: 8px;
+  background: #142735d4;
+  color: #fff7e8;
+  font: 750 1rem/1.2 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.sehir-acilis-skip:hover { background: #254651; }
+.sehir-acilis-skip:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+@media (max-width: 600px) {
+  .sehir-acilis-heading h2 { font-size: clamp(2.75rem, 13vw, 6rem); line-height: .9; }
+  .sehir-acilis-heading h2 span { display: block; }
+  .sehir-acilis-readout { gap: 8px; }
+  .sehir-acilis-label { font-size: .875rem; }
+}
+
+@media (max-height: 430px) {
+  .sehir-acilis { padding-top: max(13px, env(safe-area-inset-top)); }
+  .sehir-acilis-heading { margin-bottom: 19px; }
+  .sehir-acilis-heading h2 { font-size: clamp(2.45rem, 10vh, 4.85rem); }
+  .sehir-acilis-heading h2 span { display: inline-block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sehir-acilis,
+  .sehir-acilis::backdrop,
+  .sehir-acilis-frame,
+  .sehir-acilis-track::before { transition: none; }
+}
