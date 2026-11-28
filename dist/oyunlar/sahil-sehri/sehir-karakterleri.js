@@ -55,7 +55,7 @@ window.SehirKarakterleri = (() => {
     ], 16);
     shape(body, torso, jacket, 0, 1.30, 0, profile.build, 1, .56);
     oval(body, jacket, 0, 1.51, .009, .233 * profile.build, .056, .119);
-    capsule(model, pants, 0, 1.005, .002, .148, .075, .67);
+    const hips = capsule(model, pants, 0, 1.005, .002, .148, .075, .67);
     const neckline = new T.Shape();
     neckline.moveTo(-.065, .101);
     neckline.quadraticCurveTo(0, .067, .065, .101);
@@ -72,6 +72,9 @@ window.SehirKarakterleri = (() => {
     head.position.y = -headPivot.position.y;
     headPivot.add(head);
     body.add(headPivot);
+    const motorEye = new T.Object3D();
+    model.add(motorEye);
+    model.userData.motorEye = motorEye;
     oval(head, skin, 0, 1.735, -.008, .099, .128, .095);
     oval(head, skin, 0, 1.681, -.044, profile.style === 'denim' ? .074 : .068, .052, .071);
     shape(head, new T.SphereGeometry(1, 15, 10, 0, Math.PI * 2, 0, Math.PI * .50), hair, 0, 1.752, .009, .105, .106, .099);
@@ -147,7 +150,7 @@ window.SehirKarakterleri = (() => {
       const arm = new T.Group();
       arm.position.set(side * .218 * profile.build, 1.49, 0);
       arm.rotation.z = side * .099;
-      capsule(arm, jacket, 0, -.127, 0, .061 * profile.build, .188, 1.07);
+      const upperSleeve = capsule(arm, jacket, 0, -.127, 0, .061 * profile.build, .188, 1.07);
       const forearm = new T.Group();
       forearm.position.y = -armLength;
       oval(forearm, jacket, 0, -.006, 0, .048, .063, .048);
@@ -182,9 +185,24 @@ window.SehirKarakterleri = (() => {
       shin.add(foot);
       leg.add(shin);
       model.add(leg);
-      limbs.push({ side, arm, forearm, leg, shin, foot, armPole: new T.Vector3(side * .65, -1, .08), kneePole: new T.Vector3(side * .18, .06, -1) });
+      limbs.push({ side, arm, forearm, upperSleeve, leg, shin, foot, armPole: new T.Vector3(side * .65, -1, .08), kneePole: new T.Vector3(side * .18, .06, -1) });
     }
     model.scale.setScalar(profile.height);
+
+    let motorCockpit = false;
+    function setMotorCockpit(enabled) {
+      if (motorCockpit === enabled) return;
+      motorCockpit = enabled;
+      headPivot.visible = !enabled;
+      hips.visible = !enabled;
+      for (const part of body.children) {
+        if (part.isMesh) part.visible = !enabled;
+      }
+      for (const { leg, upperSleeve } of limbs) {
+        leg.visible = !enabled;
+        upperSleeve.visible = !enabled;
+      }
+    }
 
     function resetRide() {
       model.position.y = 0;
@@ -193,6 +211,7 @@ window.SehirKarakterleri = (() => {
       model.rotation.z = 0;
       torsoPivot.rotation.set(0, 0, 0);
       headPivot.rotation.set(0, 0, 0);
+      setMotorCockpit(false);
       for (const { forearm, shin, foot } of limbs) {
         forearm.rotation.set(0, 0, 0);
         shin.rotation.set(0, 0, 0);
@@ -231,6 +250,12 @@ window.SehirKarakterleri = (() => {
     // Match the steering pivot and footwell measured from the jet ski saddle.
     const steeringPivot = new T.Vector3(0, .21, -.732);
     const footwellY = -.305;
+    // Contact points on the sport motorcycle, in metres from its ground-level origin.
+    const motorSeatY = 1;
+    const motorSeatZ = .34;
+    const motorGrip = new T.Vector3(.398, 1.264, -.357);
+    const motorPeg = new T.Vector3(.225, .421, .155);
+    const motorKneePole = new T.Vector3();
     const torsoInverse = new T.Quaternion();
     const rotation = new T.Quaternion();
     function reach(upper, lower, delta, pole, upperLength, lowerLength) {
@@ -255,6 +280,7 @@ window.SehirKarakterleri = (() => {
       model.rotation.z = 0;
       torsoPivot.rotation.set(-.69 - .085 * Math.abs(turn), -.06 * turn, -.07 * turn);
       headPivot.rotation.set(.59, -.13 * turn, .05 * turn);
+      setMotorCockpit(false);
       torsoInverse.copy(torsoPivot.quaternion).invert();
       const barTurn = -.26 * turn;
       for (const { side, arm, forearm, leg, shin, foot, armPole, kneePole } of limbs) {
@@ -267,6 +293,36 @@ window.SehirKarakterleri = (() => {
         reach(leg, shin, towardFoot, kneePole, thighLength, shinLength);
         foot.quaternion.copy(leg.quaternion).multiply(shin.quaternion).invert()
           .multiply(rotation.setFromAxisAngle(up, side * -.095));
+      }
+    };
+
+    model.userData.rideMotor = (steer = 0, firstPerson = false) => {
+      const turn = T.MathUtils.clamp(steer, -1, 1);
+      const height = profile.height;
+      model.position.y = motorSeatY + (.137 - torsoPivot.position.y) * height;
+      model.position.z = motorSeatZ;
+      model.rotation.x = 0;
+      model.rotation.z = 0;
+      torsoPivot.rotation.set(-.72 - .035 * Math.abs(turn), -.045 * turn, -.09 * turn);
+      headPivot.rotation.set(.64, -.095 * turn, .06 * turn);
+      // Pull the camera back to keep both grips in frame. Only the arms are visible from here.
+      motorEye.position.set(0, (1.69 - model.position.y) / height, (.38 - motorSeatZ) / height);
+      setMotorCockpit(firstPerson);
+      torsoInverse.copy(torsoPivot.quaternion).invert();
+
+      for (const { side, arm, forearm, leg, shin, foot, armPole } of limbs) {
+        towardGrip.set(side * motorGrip.x, motorGrip.y, motorGrip.z);
+        towardGrip.sub(model.position).divideScalar(height).sub(torsoPivot.position)
+          .applyQuaternion(torsoInverse).add(torsoPivot.position).sub(arm.position);
+        reach(arm, forearm, towardGrip, armPole, armLength, forearmLength);
+
+        // The ankle sits above and slightly behind the peg, under the sole's arch.
+        towardFoot.set(side * motorPeg.x, motorPeg.y + .112 * height, motorPeg.z + .072 * height);
+        towardFoot.sub(model.position).divideScalar(height).sub(leg.position);
+        motorKneePole.set(side * .72, .08, -1);
+        reach(leg, shin, towardFoot, motorKneePole, thighLength, shinLength);
+        foot.quaternion.copy(leg.quaternion).multiply(shin.quaternion).invert()
+          .multiply(rotation.setFromAxisAngle(up, side * -.09));
       }
     };
 

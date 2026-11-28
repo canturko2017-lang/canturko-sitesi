@@ -45,7 +45,7 @@ body > canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   z-index: 2;
 }
 
-#fullscreenToggle, #gameTools .sehir-phone-launch {
+#fullscreenToggle, #motorCameraToggle, #gameTools .sehir-phone-launch {
   min-width: 44px;
   min-height: 44px;
   padding: 5px 9px;
@@ -57,10 +57,14 @@ body > canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   cursor: pointer;
 }
 
-#fullscreenToggle:focus-visible, #gameTools .sehir-phone-launch:focus-visible {
+#fullscreenToggle:focus-visible, #motorCameraToggle:focus-visible, #gameTools .sehir-phone-launch:focus-visible {
   outline: 2px solid #ffdc78;
   outline-offset: 3px;
 }
+
+#motorCameraToggle:not([hidden]) { display: block; margin: 5px 0 0 auto; }
+#motorCameraToggle[aria-pressed="true"] { background: #315b64; }
+.inv-open #motorCameraToggle { visibility: hidden; }
 
 #gameTools .sehir-phone-launch {
   position: static;
