@@ -90,7 +90,7 @@ const shark = SehirKopekbaligi.create(THREE, scene, SehirSahili);
 const beachVisitors = SehirOturanlar.create(THREE, scene, SehirSahili);
 const jetSkiModel = SehirJetSki.create(THREE, scene, SehirSahili);
 const jetSki = { group: jetSkiModel.group, label: 'Jet ski', speed: 0, steer: 0 };
-const berthZ = -3;
+const berthZ = 0;
 jetSki.group.position.set(SehirSahili.limitAt(berthZ) + 2.7, SehirSahili.waterLevel, berthZ);
 jetSki.group.rotation.y = -1.04;
 const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mesh(w,h,d,c,x=0,y=0,z=0,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));o.position.set(x,y,z);parent.add(o);return o}
