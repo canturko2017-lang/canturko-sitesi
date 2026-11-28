@@ -44,12 +44,13 @@
 <script src="sehir-jet-ski.js"></script>
 <script src="sehir-oturanlar.js"></script>
 <script src="sehir-hava-araclari.js"></script>
-<script src="sehir-ucus.js"></script>
+<script src="sehir-uzak-dunya.js"></script>
+<script src="sehir-ucus.js?v=2"></script>
 <script src="sehir-telefon.js"></script>
 <script>
 'use strict';
 
-if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar || !window.SehirHavaAraclari || !window.SehirUcus || !window.SehirTelefon){document.querySelector('#error').style.display='block'}else{
+if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar || !window.SehirHavaAraclari || !window.SehirUzakDunya || !window.SehirUcus || !window.SehirTelefon){document.querySelector('#error').style.display='block'}else{
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8bd1f2);
 scene.fog = new THREE.Fog(0xc4e4ef, 115, 740);
@@ -92,6 +93,7 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(975, 36, 20), new THREE.Shad
 sky.renderOrder = -10;
 scene.add(sky);
 const coast = SehirSahili.create(THREE, scene);
+const distantWorld = SehirUzakDunya.create(THREE, scene, SehirSahili);
 const boats = SehirTekneleri.create(THREE, scene);
 const swimmers = SehirYuzuculer.create(THREE, scene, SehirSahili);
 const shark = SehirKopekbaligi.create(THREE, scene, SehirSahili);
@@ -105,7 +107,7 @@ const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mes
 const region = SehirBolge.create(THREE, scene);
 const buildings = SehirBinalari.create(THREE, scene, (x, z) => (x <= -200 && z >= 200) || (x >= 200 && z <= -200));
 buildings.push(...region.bounds);
-const flight = SehirUcus.create(THREE, region.flight, SehirHavaAraclari.create(THREE, scene), buildings);
+const flight = SehirUcus.create(THREE, region.flight, SehirHavaAraclari.create(THREE, scene), buildings, distantWorld.heightAt);
 const [airplane, helicopter] = flight.vehicles;
 function makeRoadSign(x, z, heading, text) {
   const sign = new THREE.Group();
@@ -245,6 +247,7 @@ const flightPanel = $('#flightPanel');
 const flightAltitude = $('#flightAltitude');
 const flightHint = $('#flightHint');
 const flightLand = $('#flightLand');
+const kilometres = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 const coarsePointer = matchMedia('(pointer: coarse)');
 const roadEnd = 400;
 const beachEntryX = 414;
@@ -409,7 +412,8 @@ function updateNavigation() {
   const dz = (point.z ?? z) - z;
   const distance = target === destinations.shore ? Math.max(0, Math.round(dx)) : Math.round(Math.hypot(dx, dz));
   const arrived = target === destinations.shore ? distance === 0 : distance <= (target === destinations.jetSki ? 4 : 12);
-  const description = arrived ? target.label : `${target.label} · ${distance} m`;
+  const remaining = distance < 1000 ? `${distance} m` : `${kilometres.format(distance / 1000)} km`;
+  const description = arrived ? target.label : `${target.label} · ${remaining}`;
   if (shoreDistance.textContent !== description) shoreDistance.textContent = description;
   shoreArrow.hidden = arrived;
   if (!arrived) {
@@ -420,7 +424,9 @@ function updateNavigation() {
   flightPanel.hidden = !aircraft;
   if (aircraft) {
     const altitudeText = `${altitude} m irtifa`;
-    const hint = aircraft.approach ? 'Havalimanına iniş sürüyor' : aircraft.airborne ? 'W / ↑ yüksel · S / ↓ alçal · A / D dön' : 'W / ↑ ile kalk';
+    const hint = aircraft.approach?.accelerated ? 'Havalimanına hızlandırılmış dönüş'
+      : aircraft.approach ? 'Havalimanına iniş sürüyor'
+      : aircraft.airborne ? 'W / ↑ yüksel · S / ↓ alçal · A / D dön' : 'W / ↑ ile kalk';
     if (flightAltitude.textContent !== altitudeText) flightAltitude.textContent = altitudeText;
     if (flightHint.textContent !== hint) flightHint.textContent = hint;
     flightLand.hidden = !aircraft.airborne;
@@ -732,6 +738,21 @@ function updateCityCamera(smoothing) {
   camera.lookAt(cameraFocus);
   sky.position.copy(camera.position);
 }
+
+function updateFlightView(elapsed) {
+  const horizon = Math.max(0, camera.position.y - 85);
+  const near = horizon > 20 ? 1.2 : .12;
+  const far = 1350 + horizon * 3.8;
+  if (camera.near !== near || Math.abs(camera.far - far) > Math.max(20, far * .015)) {
+    camera.near = near;
+    camera.far = far;
+    camera.updateProjectionMatrix();
+  }
+  scene.fog.near = 115 + horizon * 1.12;
+  scene.fog.far = 740 + horizon * 3;
+  distantWorld.update(camera.position, scene.fog.far, elapsed);
+}
+
 function loop(now) {
   requestAnimationFrame(loop);
   const dt = Math.max(0, Math.min((now - last) / 1000, .05));
@@ -752,6 +773,7 @@ function loop(now) {
   beachVisitors.update(elapsed, player.position);
   region.update(elapsed);
   for (const aircraft of flight.vehicles) aircraft.model.update(elapsed, aircraft.power, current === aircraft);
+  updateFlightView(elapsed);
   renderer.render(scene, camera);
 }
 updateCityCamera(1);
