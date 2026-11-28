@@ -350,7 +350,7 @@
     district.add(beacon);
     solid(377, -284, 4.2, 21.85, 4.2);
 
-    function banner(text, x, y, z, w, h, background, size) {
+    function banner(text, x, y, z, w, h, background, size, yaw = 0) {
       const map = canvasMap(1024, 144, ctx => {
         ctx.fillStyle = background;
         ctx.fillRect(0, 0, 1024, 144);
@@ -362,6 +362,7 @@
       });
       const panel = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map }));
       panel.position.set(x, y, z);
+      panel.rotation.y = yaw;
       district.add(panel);
     }
 
@@ -369,6 +370,36 @@
     box(0x315b61, 331, 2.8, -230, 13.18, 1.72, .24);
     for (const side of [-1, 1]) box(0x7b9090, 331 + side * 5.3, 1.62, -230, .15, 3.24, .15);
     banner('TERMİNAL  ↖', 331, 2.8, -229.87, 13.14, 1.66, '#315b61', 86);
+
+    // Landside service bay. Its open north face meets the airport access road.
+    const garage = new THREE.Vector3(370, .17, -220);
+    const garageEntranceZ = -228;
+    const garageBackZ = -212;
+    const garageDepth = garageBackZ - garageEntranceZ;
+    const garageMiddleZ = (garageBackZ + garageEntranceZ) / 2;
+    const garageHalfWidth = 9;
+    const garageWallHeight = 4.6;
+    const concrete = 0xbbb6aa;
+    const darkConcrete = 0x666b65;
+
+    instance(unitBox, taxi, garage.x, .073, -231, 13, .075, 8.5);
+    box(0x918e7b, garage.x, .091, garageMiddleZ, 18.4, .073, garageDepth + .2);
+    for (const side of [-1, 1]) {
+      const wallX = garage.x + side * garageHalfWidth;
+      box(concrete, wallX, garageWallHeight / 2, garageMiddleZ, .62, garageWallHeight, garageDepth);
+      solid(wallX, garageMiddleZ, .62, garageWallHeight, garageDepth);
+      box(darkConcrete, wallX, .54, garageMiddleZ, .65, 1.01, garageDepth);
+      box(0x697776, wallX, 2.35, garageEntranceZ, .9, 4.6, .89);
+      box(yellow, garage.x + side * 2.9, .141, garage.z, .12, .017, 10);
+      box(0xefe3bf, garage.x + side * 6.7, 4.15, garageEntranceZ - .46, 1.03, .25, .12);
+    }
+    box(concrete, garage.x, garageWallHeight / 2, garageBackZ, 18.5, garageWallHeight, .62);
+    solid(garage.x, garageBackZ, 18.5, garageWallHeight, .62);
+    box(darkConcrete, garage.x, .54, garageBackZ - .32, 18.3, 1.01, .09);
+    box(0x4f5755, garage.x, 4.7, garageMiddleZ, 18.9, .52, garageDepth + 1.05);
+    box(0x3d5459, garage.x, 4.28, garageEntranceZ - .16, 17.4, 1.12, .44);
+    banner('SERVİS GARAJI', garage.x, 4.29, garageEntranceZ - .387, 13.1, 1.08, '#3d5459', 91, Math.PI);
+    box(yellow, garage.x, .142, garage.z + 4.38, 5.8, .018, .16);
 
     if (airportPhoto) {
       const x = 304.8;
@@ -513,7 +544,7 @@
       beacon.material.color.setHex(Math.sin(timeSeconds * 6.1) > .47 ? 0xffbc82 : 0x9e3e30);
     }
 
-    return { bounds, flight, update };
+    return { bounds, flight, garage, update };
   }
 
   window.SehirBolge = { create };

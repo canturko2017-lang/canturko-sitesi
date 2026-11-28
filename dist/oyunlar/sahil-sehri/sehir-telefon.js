@@ -3,6 +3,7 @@
 window.SehirTelefon = (() => {
   const routes = {
     airport: { label: 'Havalimanı', point: [86, 39], shape: 'M4 20h16M6 20v-9l6-5 6 5v9M9 14h6m-3 0v6M3 11l9-7 9 7', note: 'Terminal, uçak pisti ve helikopter alanı havalimanında. Yön göstergesini takip et.' },
+    garage: { label: 'Servis garajı', point: [109, 44], shape: 'M3 20V9l9-5 9 5v11M6 20V11h12v9M6 14h12M6 17h12', note: 'İşaretli arabaları havalimanının doğusundaki servis garajına götür. Sarı halkaya kadar sür.' },
     airplane: { label: 'Uçak', point: [111, 25], shape: 'M12 3v18m0-14 8 6v3l-8-3-8 3v-3zm0 11 3 3m-3-3-3 3', note: 'Pistte park eden uçağa yaklaş. Uçuş kontrolleri araca bindiğinde görünür.' },
     helicopter: { label: 'Helikopter', point: [109, 62], shape: 'M3 5h18m-9 0v4m0 8H6l-3-3V9h5l4 3h4l3-3h2v3l-4 5h-5m-4 0v3m8-3v3M6 20h12', note: 'Helikopteri terminal yakınındaki iniş alanında bulabilirsin.' },
     shore: { label: 'Kumsal', point: [221, 76], shape: 'M3 11a9 9 0 0 1 18 0H3zm9 0v7m-7 2c2-2 4 2 7 0s5-2 7 0', note: 'Kumsala doğru sür, kıyıda araçtan inip yürüyerek veya yüzerek devam et.' },
@@ -16,7 +17,6 @@ window.SehirTelefon = (() => {
     .sehir-phone-launch { position: fixed; z-index: 4; right: max(16px, env(safe-area-inset-right)); top: 46%; transform: translateY(-50%); display: grid; place-items: center; gap: 2px; width: 62px; height: 58px; padding: 6px 4px; background: #152e37; color: #f4fcf6; border: 1px solid #83a6ab; border-radius: 12px; box-shadow: 0 5px 18px #0e1f2b57; font: 700 13px/1 Arial,sans-serif; cursor: pointer; }
     .sehir-phone-launch svg { width: 21px; height: 21px; color: #bcf0c8; }
     .sehir-phone-launch:hover { background: #244653; }
-    .inv-open .sehir-phone-launch, .city-ended .sehir-phone-launch { display: none; }
     .sehir-phone-dialog, .sehir-phone-dialog * { box-sizing: border-box; }
     .sehir-phone-dialog { position: fixed; z-index: 7; top: 50%; right: max(18px, env(safe-area-inset-right)); bottom: auto; left: auto; transform: translateY(-50%); overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; width: min(364px, calc(100% - 26px)); max-width: none; max-height: calc(100vh - 22px); max-height: calc(100dvh - 22px); margin: 0; padding: 15px; background: #112a2e; color: #fbfff9; border: 5px solid #314b4f; border-radius: 23px; box-shadow: 0 16px 46px #07161ccb, inset 0 0 0 1px #58777559; font: 16px/1.36 Arial,sans-serif; }
     .sehir-phone-dialog:not([open]), .sehir-phone-curtain[hidden] { display: none; }

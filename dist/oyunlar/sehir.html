@@ -2,64 +2,12 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Gece Şehri: İlk Görev</title>
-  <link rel="stylesheet" href="gece-sehri/sehir-acilis.css">
-  <link rel="preload" href="gece-sehri/acilis-sehir.jpg" as="image">
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #131c25; color: #fff; font: 15px/1.45 Arial, sans-serif; overflow: hidden; }
-    [hidden] { display: none !important; }
-    body > canvas { position: absolute; inset: 0; display: block; }
-    .hud, .help, .action { position: absolute; background: #142130ec; }
-    .hud { top: 18px; left: 18px; width: min(305px, calc(100vw - 36px)); padding: 14px; border-left: 4px solid #f5bc4c; }
-    .hud h2 { margin: 0 0 8px; font-size: 19px; letter-spacing: .045em; }
-    .hud p { margin: 5px 0; }
-    #mission { color: #ffd789; }
-    .guide { color: #d4edf1; }
-    #direction { display: inline-block; margin-right: 6px; }
-    .help { bottom: 16px; left: 16px; padding: 9px 11px; font-size: 13px; }
-    .action { right: 16px; bottom: 16px; min-height: 44px; border: 1px solid #88a0b4; color: inherit; padding: 9px 12px; cursor: pointer; }
-    .action:disabled { opacity: .64; cursor: default; }
-    .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; overflow: auto; background: linear-gradient(125deg, #131d2de8, #482524df); }
-    .box { width: min(510px, 100%); text-align: center; padding: 24px; }
-    .box h1 { margin: 0; font-size: clamp(38px, 8vw, 78px); line-height: .98; letter-spacing: -.04em; }
-    .box h1 span { color: #f5bc4c; }
-    .box p { color: #f0eeeb; max-width: 385px; margin: 16px auto; }
-    .box label { margin-right: 9px; }
-    .box select { min-height: 44px; padding: 6px 24px 6px 10px; border: 1px solid #b1bac6; border-radius: 4px; background: #233347; color: #fff; font: inherit; }
-    .box button { display: block; margin: 16px auto 0; border: 0; background: #f5bc4c; color: #22252b; padding: 13px 23px; font-size: 16px; font-weight: 700; cursor: pointer; }
-    #error { position: absolute; left: 16px; right: 16px; bottom: 16px; padding: 10px; background: #8e2929; z-index: 3; }
-    @media (max-width: 540px) {
-      .hud { top: 8px; left: 8px; width: min(230px, calc(100vw - 16px)); padding: 8px 10px; font-size: 12px; }
-      .hud h2 { font-size: 16px; }
-      .help { display: none; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sahil Şehri’ne geçiliyor</title>
+  <link rel="canonical" href="https://canturko.com/oyunlar/sahil-sehri/oyna.html">
+  <meta http-equiv="refresh" content="0; url=./sahil-sehri/oyna.html">
 </head>
 <body>
-  <script src="gece-sehri/sehir-acilis.js"></script>
-  <script>const opening = window.SehirAcilis?.create();</script>
-  <section class="hud" aria-label="Görev" hidden>
-    <h2>GECE ŞEHRİ</h2>
-    <p id="mission" role="status"></p>
-    <p class="guide"><span id="direction" aria-hidden="true">↑</span><span id="guidance"></span></p>
-    <p><span id="character"></span> · <span id="delivered">0 / 3 araç</span></p>
-  </section>
-  <div class="help" hidden>WASD / ok tuşları: yürü veya sür · Fare: kamera<br>E: arabayı al / arabadan in · R: yeniden başlat</div>
-  <button id="interact" class="action" type="button" disabled hidden>Arabaya yaklaş</button>
-  <div id="intro" class="overlay">
-    <section class="box">
-      <h1>GECE <span>ŞEHRİ</span></h1>
-      <p>Şehirde park edilmiş bir araba bul, <strong>E</strong> ile al ve sarı işareti takip edip garaja götür.</p>
-      <label for="characterSelect">Karakter</label><select id="characterSelect"></select>
-      <button id="start" type="button">HİKÂYEYE BAŞLA</button>
-    </section>
-  </div>
-  <div id="error" role="alert" hidden>3B oyun yüklenemedi. Sayfayı yenileyip tekrar dene.</div>
-  <script src="three.min.js"></script>
-  <script src="sahil-sehri/sehir-karakterleri.js?v=4"></script>
-  <script src="sahil-sehri/bmw-araclari.js"></script>
-  <script src="gece-sehri/oyun.js"></script>
+  <main><a href="./sahil-sehri/oyna.html">Sahil Şehri’ni oyna</a></main>
 </body>
 </html>
