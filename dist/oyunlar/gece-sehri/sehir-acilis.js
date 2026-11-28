@@ -1,7 +1,8 @@
 'use strict';
 
 window.SehirAcilis = (() => {
-  const assets = ['acilis-sahil.jpg', 'acilis-pist.jpg', 'acilis-sehir.jpg'];
+  const assetBase = document.currentScript?.src;
+  const assets = ['acilis-sehir.jpg', 'acilis-sahil.jpg', 'acilis-pist.jpg'];
   const stepMs = 3000;
   const durationMs = 30000;
 
@@ -15,7 +16,8 @@ window.SehirAcilis = (() => {
       <div class="sehir-acilis-frames" aria-hidden="true"></div>
       <div class="sehir-acilis-shade" aria-hidden="true"></div>
       <header class="sehir-acilis-heading">
-        <h2 id="sehir-acilis-title" tabindex="-1"><span>Sahil</span> <span>Şehri</span></h2>
+        <h2 id="sehir-acilis-title" tabindex="-1"><span>Gece</span> <span>Şehri</span></h2>
+        <p class="sehir-acilis-caption">GTA 5 esintili açılış</p>
       </header>
       <div class="sehir-acilis-bottom">
         <div class="sehir-acilis-status">
@@ -54,7 +56,7 @@ window.SehirAcilis = (() => {
         tick();
       });
       image.addEventListener('error', () => { image.hidden = true; });
-      image.src = source;
+      image.src = assetBase ? new URL(source, assetBase).href : source;
       container.append(image);
       return frame;
     });
