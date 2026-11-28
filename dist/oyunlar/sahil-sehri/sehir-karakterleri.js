@@ -88,10 +88,25 @@ window.SehirKarakterleri = (() => {
     }
     model.scale.setScalar(profile.height);
     model.userData.pose = (stride = 0, wave = false) => {
+      model.position.z = 0;
+      model.rotation.x = 0;
+      model.rotation.z = 0;
       for (const { side, arm, leg } of limbs) {
         leg.rotation.x = stride * side;
         arm.rotation.x = -stride * side * .63;
         arm.rotation.z = wave && side === 1 ? 2.1 : side * .099;
+      }
+    };
+    model.userData.swim = (phase, power, immersion) => {
+      model.position.z = .91 * profile.height * immersion;
+      model.rotation.x = -1.36 * immersion;
+      model.rotation.z = Math.sin(phase) * .14 * power * immersion;
+      for (const { side, arm, leg } of limbs) {
+        const stroke = phase + (side > 0 ? Math.PI : 0);
+        const angle = Math.sin(stroke) * 1.64 + Math.sin(stroke * 2) * .48;
+        arm.rotation.x = T.MathUtils.lerp(.15 + Math.sin(stroke) * .47, angle, power) * immersion;
+        arm.rotation.z = side * (.1 + (.24 + Math.cos(stroke) * .13) * immersion);
+        leg.rotation.x = Math.sin(stroke * 2.5) * (.12 + power * .19) * side * immersion;
       }
     };
     return model;

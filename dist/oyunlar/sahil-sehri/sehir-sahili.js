@@ -5,9 +5,17 @@
   const coastExtent = 690;
   const segmentCount = 172;
   const tau = Math.PI * 2;
+  const waterLevel = -.211;
 
   function limitAt(z) {
     return 455 + 7 * Math.sin(z * .012 + .62) + 3 * Math.sin(z * .029 - .81);
+  }
+
+  function waveHeightAt(x, z, time) {
+    const depth = Math.max(0, Math.min(1, (x - limitAt(z)) / 34));
+    const swell = .024 + .14 * depth * depth * (3 - 2 * depth);
+    return waterLevel + swell * (Math.sin(x * .155 + z * .07 + time * 1.15) +
+      .52 * Math.sin(z * .146 - x * .099 + time * .78));
   }
 
   function randomSource(seed) {
@@ -70,6 +78,7 @@
 
   function beachSurface(THREE) {
     const inland = new THREE.Color(0xe1cb9c), dry = new THREE.Color(0xffe2a8), wet = new THREE.Color(0xb18d64);
+    const shallowBed = new THREE.Color(0xb3a77f), deepBed = new THREE.Color(0x46706c);
     const profile = [
       (z, shore) => [beachStart, -.129, inland],
       (z, shore) => [416, -.095, inland],
@@ -78,6 +87,11 @@
       (z, shore) => [shore - 3.6, -.149, wet],
       (z, shore) => [shore - .4, -.184, wet],
       (z, shore) => [shore + 1.8, -.44, wet],
+      (z, shore) => [shore + 5, -1.2, shallowBed],
+      (z, shore) => [shore + 13, -2.7, shallowBed],
+      (z, shore) => [shore + 31, -5.8, deepBed],
+      (z, shore) => [shore + 63, -9.3, deepBed],
+      (z, shore) => [shore + 128, -14, deepBed],
     ];
     const sand = coastStrip(THREE, profile.length, (z, column) => {
       const [x, y, color] = profile[column](z, limitAt(z));
@@ -90,7 +104,7 @@
 
   function seawater(THREE) {
     const depths = [-1.5, 0, 2.9, 6, 11, 19, 29, 44, 68, 100, 149, 217, 318, 475, 780];
-    const geometry = coastStrip(THREE, depths.length, (z, column) => ({ x: limitAt(z) + depths[column], y: -.211 }));
+    const geometry = coastStrip(THREE, depths.length, (z, column) => ({ x: limitAt(z) + depths[column], y: waterLevel }));
     const uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       time: { value: 0 },
       shallows: { value: new THREE.Color(0x75c8c0) },
@@ -99,7 +113,7 @@
       sky: { value: new THREE.Color(0x96c7e6) },
     }]);
     const material = new THREE.ShaderMaterial({
-      fog: true, uniforms,
+      fog: true, transparent: true, depthWrite: false, uniforms,
       vertexShader: `
         #include <fog_pars_vertex>
         uniform float time;
@@ -154,7 +168,10 @@
           float specular = max(0.0, dot(normal, halfDirection));
           float glimmer = pow(specular, 91.0) * (.34 + .54 * textureFade) + pow(specular, 23.0) * .094;
           sea += vec3(1.0, .88, .67) * glimmer;
-          gl_FragColor = vec4(sea, 1.0);
+          float opacity = mix(.44, .84, smoothstep(-.8, 65.0, depth));
+          float reflection = clamp(horizon * .8 + max(foam, 0.0) * .45 + glimmer, 0.0, 1.0);
+          opacity = mix(opacity, 1.0, max(reflection, smoothstep(56.0, 110.0, depth)));
+          gl_FragColor = vec4(sea, opacity);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>
           #include <fog_fragment>
@@ -359,5 +376,5 @@
     };
   }
 
-  window.SehirSahili = { limitAt, create };
+  window.SehirSahili = { limitAt, waterLevel, waveHeightAt, create };
 })();

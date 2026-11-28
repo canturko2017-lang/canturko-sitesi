@@ -4,7 +4,9 @@
 .shore-nav,.vehicle-action,.touch-controls button{background:#102432e8;color:#fff;border:1px solid #aac6c8;border-radius:9px;font:700 14px Arial,sans-serif}
 .shore-nav{position:absolute;top:20px;left:50%;transform:translateX(-50%);padding:9px 13px;white-space:nowrap}
 #shoreArrow{display:inline-block;margin-right:6px;color:#ffdc78}.vehicle-action{position:absolute;bottom:24px;right:20px;padding:13px 16px;cursor:pointer}.vehicle-action:disabled{opacity:.65;cursor:default}
-#shoreArrow[hidden]{display:none}
+#shoreArrow[hidden],.swim-status[hidden]{display:none}
+.swim-status{display:block;margin-top:5px;color:#abe6ec;font-size:13px}
+.swimming .cross{display:none}
 .portal-back{display:inline-block;margin-top:5px;color:#dceaf0;font-size:12px}.portal-back:hover,.portal-back:focus-visible{color:#ffdc78}
 .touch-controls{display:none}canvas{touch-action:none}
 .notice:empty{display:none}
@@ -14,9 +16,10 @@
 .drive-readout strong{display:block;font-size:20px}.end-screen{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:#0c1b28ba;padding:20px}
 .end-screen[hidden],.drive-readout[hidden]{display:none}.end-screen section{max-width:410px;padding:28px;background:#112a39;border:1px solid #82a9a7;border-top:5px solid #ffca73;border-radius:12px}.end-screen h2{margin:0 0 12px;font-size:clamp(28px,6vw,48px)}.end-screen p{line-height:1.45}.end-screen button{background:#ffca73;color:#172631;border:0;padding:10px 14px;border-radius:6px;font:700 15px Arial,sans-serif;cursor:pointer}
 @media(max-width:740px){.shore-nav .destination{display:block;margin:6px 0 0 auto}.status{margin-top:27px}.drive-readout{right:8px;bottom:65px;font-size:12px}}
+@media(max-width:740px){.swimming .status{margin-top:47px}}
 @media(max-width:740px){.shore-nav{top:8px;left:auto;right:8px;transform:none}.vehicle-action{bottom:12px;right:8px}.status{top:54px;right:8px;bottom:auto}.hud{top:8px;left:8px;max-width:49vw;padding:7px 9px}.hud h1,.hud h1 span{font-size:clamp(13px,4.1vw,28px)}.hud p{font-size:12px;margin:3px 0}.bottom{bottom:10px;left:8px;max-width:53vw}.notice{bottom:78px;max-width:90vw;white-space:normal;text-align:center}}
 @media(pointer:coarse){.bottom{display:none}.touch-controls{position:absolute;left:12px;bottom:14px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}.touch-controls button{font-size:22px;touch-action:none}.touch-controls button[data-move=w]{grid-column:2}.touch-controls button[data-move=a]{grid-row:2}.touch-controls button[data-move=s]{grid-row:2;grid-column:2}.touch-controls button[data-move=d]{grid-row:2;grid-column:3}.touch-controls button.active{background:#315b64}}
-</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü veya sür · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · G: el hareketi · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="airport">Havalimanı</option><option value="desert">Çöl kasabası</option></select></div>
+</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü, sür veya yüz · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · G: el hareketi · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="airport">Havalimanı</option><option value="desert">Çöl kasabası</option></select><span id="swimStatus" class="swim-status" role="status" hidden>Yüzüyorsun</span></div>
 <div id="citySpeed" class="drive-readout" hidden><strong id="speedValue">0 km/sa</strong><span id="carName"></span></div>
 <button class="vehicle-action" id="vehicleAction" type="button" disabled>Araca bin (F)</button>
 <div class="touch-controls" aria-label="Hareket düğmeleri"><button type="button" data-move="w" aria-label="İleri">↑</button><button type="button" data-move="a" aria-label="Sol">←</button><button type="button" data-move="s" aria-label="Geri">↓</button><button type="button" data-move="d" aria-label="Sağ">→</button></div>
@@ -26,15 +29,17 @@
 </div>
 <script src="../three.min.js"></script>
 <script src="bmw-araclari.js"></script>
-<script src="sehir-karakterleri.js"></script>
+<script src="sehir-karakterleri.js?v=2"></script>
 <script src="sehir-bolge.js"></script>
 <script src="sehir-binalari.js"></script>
-<script src="sehir-sahili.js"></script>
+<script src="sehir-sahili.js?v=2"></script>
 <script src="sehir-tekneleri.js"></script>
+<script src="sehir-yuzuculer.js"></script>
+<script src="sehir-kopekbaligi.js"></script>
 <script>
 'use strict';
 
-if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari){document.querySelector('#error').style.display='block'}else{
+if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi){document.querySelector('#error').style.display='block'}else{
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8bd1f2);
 scene.fog = new THREE.Fog(0xc4e4ef, 115, 740);
@@ -78,6 +83,8 @@ sky.renderOrder = -10;
 scene.add(sky);
 const coast = SehirSahili.create(THREE, scene);
 const boats = SehirTekneleri.create(THREE, scene);
+const swimmers = SehirYuzuculer.create(THREE, scene, SehirSahili);
+const shark = SehirKopekbaligi.create(THREE, scene, SehirSahili);
 const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mesh(w,h,d,c,x=0,y=0,z=0,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));o.position.set(x,y,z);parent.add(o);return o}
 const region = SehirBolge.create(THREE, scene);
 const buildings = SehirBinalari.create(THREE, scene, (x, z) => (x <= -200 && z >= 200) || (x >= 200 && z <= -200));
@@ -209,6 +216,7 @@ const up = new THREE.Vector3(0, 1, 0);
 const vehicleAction = $('#vehicleAction');
 const shoreDistance = $('#shoreDistance');
 const shoreArrow = $('#shoreArrow');
+const swimStatus = $('#swimStatus');
 const destination = $('#destination');
 const speedPanel = $('#citySpeed');
 const speedValue = $('#speedValue');
@@ -223,6 +231,21 @@ const destinations = {
   desert: { label: 'Çöl kasabası', x: -320, z: 320 },
 };
 let cameraPitch = .32;
+let swimming = false;
+let immersion = 0;
+let strokePhase = 0;
+let strokePower = 0;
+const swimRange = 94;
+const wakeRipples = [0, .5].map(phase => {
+  const geometry = new THREE.RingGeometry(.91, 1, 36);
+  geometry.rotateX(-Math.PI / 2);
+  const material = new THREE.MeshBasicMaterial({ color: 0xe3fff9, transparent: true, opacity: 0, depthWrite: false });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.visible = false;
+  mesh.renderOrder = 2;
+  scene.add(mesh);
+  return { phase, mesh };
+});
 let noticeTimer;
 
 function explain(text) {
@@ -255,7 +278,7 @@ function vehicleContains(vehicle, x, z, padding) {
 }
 
 function interact() {
-  if (inventory || stage === 5) return;
+  if (inventory || stage === 5 || swimming) return;
   if (current) {
     const vehicle = current;
     const { position, rotation } = vehicle.group;
@@ -301,7 +324,7 @@ function updateNavigation() {
   const action = current ? 'Araçtan in' : 'Araca bin';
   const label = coarsePointer.matches ? action : `${action} (F)`;
   if (vehicleAction.textContent !== label) vehicleAction.textContent = label;
-  vehicleAction.disabled = !current && !nearestVehicle();
+  vehicleAction.disabled = swimming || (!current && !nearestVehicle());
   const { x, z } = player.position;
   const target = destinations[destination.value];
   const dx = target.x - x;
@@ -419,10 +442,10 @@ canvas.addEventListener('pointermove', event => {
 canvas.addEventListener('lostpointercapture', event => {
   if (event.pointerId === drag?.id) drag = null;
 });
-function shoot(){if(current||inventory||stage!==2||performance.now()<nextShot)return;nextShot=performance.now()+250;if(weapon!=='Yumruk'){if(ammo<=0){notice.textContent='Mermi bitti! R ile yeniden başlat.';return}ammo--}ui();const origin=player.position.clone().add(new THREE.Vector3(0,1.5,0));const direction=new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0),yaw);const candidates=enemies.filter(e=>e.visible).map(e=>{const delta=e.position.clone().sub(player.position);const distance=delta.length();return {e,distance,angle:delta.normalize().dot(direction)}}).filter(x=>x.distance<(weapon==='Yumruk'?4:65)&&x.angle>.96).sort((a,b)=>a.distance-b.distance);if(candidates.length){const e=candidates[0].e;e.visible=false;if(stage===2&&enemies.every(x=>!x.visible)){stage=3;marker.visible=true;marker.position.set(-160,.2,160);ui()}}}
+function shoot(){if(current||swimming||inventory||stage!==2||performance.now()<nextShot)return;nextShot=performance.now()+250;if(weapon!=='Yumruk'){if(ammo<=0){notice.textContent='Mermi bitti! R ile yeniden başlat.';return}ammo--}ui();const origin=player.position.clone().add(new THREE.Vector3(0,1.5,0));const direction=new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0),yaw);const candidates=enemies.filter(e=>e.visible).map(e=>{const delta=e.position.clone().sub(player.position);const distance=delta.length();return {e,distance,angle:delta.normalize().dot(direction)}}).filter(x=>x.distance<(weapon==='Yumruk'?4:65)&&x.angle>.96).sort((a,b)=>a.distance-b.distance);if(candidates.length){const e=candidates[0].e;e.visible=false;if(stage===2&&enemies.every(x=>!x.visible)){stage=3;marker.visible=true;marker.position.set(-160,.2,160);ui()}}}
 function blocked(x, z, vehicle) {
   const clearance = vehicle ? (vehicle.type === 'araba' ? 1.06 : .72) : .48;
-  const east = vehicle ? 418 : SehirSahili.limitAt(z) - .9;
+  const east = vehicle ? 418 : SehirSahili.limitAt(z) + swimRange;
   if (x < -roadEnd || x > east) return true;
   if (buildings.some(b => Math.abs(x - b.x) < b.halfWidth + clearance && Math.abs(z - b.z) < b.halfDepth + clearance)) return true;
   return vehicles.some(parked => parked !== vehicle && vehicleContains(parked, x, z, clearance)) ||
@@ -440,7 +463,43 @@ function move(obj, dx, dz, vehicle = null) {
   return Math.hypot(position.x - oldX, position.z - oldZ);
 }
 
-function updateMovement(dt) {
+function updateSwim(dt, elapsed, distanceMoved) {
+  const { x, z } = player.position;
+  const inWater = !current && x - SehirSahili.limitAt(z) > .8;
+  if (inWater !== swimming) {
+    swimming = inWater;
+    swimStatus.hidden = !swimming;
+    document.body.classList.toggle('swimming', swimming);
+  }
+  immersion += (Number(swimming) - immersion) * (1 - Math.exp(-10 * dt));
+  strokePower += (Number(swimming && distanceMoved > .002) - strokePower) * (1 - Math.exp(-7 * dt));
+  strokePhase += dt * (1.9 + strokePower * 4.8);
+  if (!current) {
+    const surface = SehirSahili.waveHeightAt(x, z, elapsed);
+    player.position.y = immersion * (surface - .22 + Math.sin(strokePhase * 2) * .035);
+  }
+  const avatar = avatars[selected];
+  if (immersion > .015) avatar.userData.swim(strokePhase, strokePower, immersion);
+  else avatar.userData.pose(Math.sin(strideProgress) * strideAmount, elapsed * 1000 < gestureUntil);
+}
+
+function updateRipples(elapsed) {
+  const { x, z } = player.position;
+  for (const { phase, mesh } of wakeRipples) {
+    mesh.visible = swimming && player.visible;
+    if (!mesh.visible) continue;
+    const wave = (elapsed * (.65 + strokePower * .65) + phase) % 1;
+    const tail = strokePower * (.35 + wave * .95);
+    const rippleX = x + Math.sin(player.rotation.y) * tail;
+    const rippleZ = z + Math.cos(player.rotation.y) * tail;
+    mesh.position.set(rippleX, SehirSahili.waveHeightAt(rippleX, rippleZ, elapsed) + .055, rippleZ);
+    mesh.rotation.y = player.rotation.y;
+    mesh.scale.set(.29 + wave * .62, 1, .41 + wave * .81);
+    mesh.material.opacity = (1 - wave) * (.18 + strokePower * .22);
+  }
+}
+
+function updateMovement(dt, elapsed) {
   const forward = Number(Boolean(held('w'))) - Number(Boolean(held('s')));
   const steer = Number(Boolean(held('d'))) - Number(Boolean(held('a')));
   let walked = 0;
@@ -459,12 +518,14 @@ function updateMovement(dt) {
     player.position.copy(current.group.position);
   } else if (forward || steer) {
     walkingDirection.set(steer, 0, -forward).normalize().applyAxisAngle(up, yaw);
-    const stride = (keys.shift ? 13 : 8) * dt;
+    const speed = swimming ? 4.1 : (keys.shift ? 13 : 8);
+    const stride = speed * dt;
     walked = move(player, walkingDirection.x * stride, walkingDirection.z * stride);
     player.rotation.y = Math.atan2(-walkingDirection.x, -walkingDirection.z);
   }
   strideProgress += walked * 4.4;
   strideAmount += ((walked > .002 ? .53 : 0) - strideAmount) * Math.min(1, dt * 12);
+  updateSwim(dt, elapsed, walked);
 }
 
 function updateTraffic(dt, elapsed) {
@@ -524,11 +585,12 @@ function updateMission(now) {
 
 function updateCityCamera(smoothing) {
   const p = player.position;
-  const radius = current ? 15 : 10;
-  cameraAnchor.set(0, 2 + Math.sin(cameraPitch) * radius, Math.cos(cameraPitch) * radius);
+  const radius = current ? 15 : THREE.MathUtils.lerp(10, 7.5, immersion);
+  const anchorHeight = THREE.MathUtils.lerp(2, 1.85, immersion);
+  cameraAnchor.set(0, anchorHeight + Math.sin(cameraPitch) * radius, Math.cos(cameraPitch) * radius);
   cameraAnchor.applyAxisAngle(up, yaw).add(p);
   camera.position.lerp(cameraAnchor, smoothing);
-  cameraFocus.set(p.x, p.y + 1.6, p.z);
+  cameraFocus.set(p.x, p.y + THREE.MathUtils.lerp(1.6, .45, immersion), p.z);
   cameraRay.origin.copy(cameraFocus);
   cameraRay.direction.subVectors(camera.position, cameraFocus);
   let visibleDistance = cameraRay.direction.length();
@@ -549,17 +611,19 @@ function loop(now) {
   requestAnimationFrame(loop);
   const dt = Math.max(0, Math.min((now - last) / 1000, .05));
   last = now;
+  const elapsed = now / 1000;
   if (!inventory && stage !== 5) {
-    updateMovement(dt);
-    avatars[selected].userData.pose(Math.sin(strideProgress) * strideAmount, now < gestureUntil);
+    updateMovement(dt, elapsed);
     updateMission(now);
     updateCityCamera(1 - Math.exp(-dt * 10));
     updateNavigation();
   }
-  const elapsed = now / 1000;
+  updateRipples(elapsed);
   updateTraffic(dt, elapsed);
   coast.update(elapsed);
   boats.update(elapsed);
+  swimmers.update(elapsed, player.position);
+  shark.update(elapsed, player.position);
   region.update(elapsed);
   renderer.render(scene, camera);
 }
