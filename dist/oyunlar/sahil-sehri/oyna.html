@@ -6,7 +6,11 @@
 #shoreArrow{display:inline-block;margin-right:6px;color:#ffdc78}.vehicle-action{position:absolute;bottom:24px;right:20px;padding:13px 16px;cursor:pointer}.vehicle-action:disabled{opacity:.65;cursor:default}
 #shoreArrow[hidden],.swim-status[hidden]{display:none}
 .swim-status{display:block;margin-top:5px;color:#abe6ec;font-size:13px}
-.swimming .cross,.jet-riding .cross{display:none}
+.swimming .cross,.jet-riding .cross,.air-riding .cross{display:none}
+.flight-panel{position:absolute;right:20px;bottom:148px;max-width:min(275px,calc(100vw - 42px));padding:11px 13px;border:1px solid #668b95;border-radius:9px;background:#102432ed;color:#e4f5f6;font:13px/1.45 Arial,sans-serif}
+.flight-panel[hidden]{display:none}.flight-panel strong{display:block;color:#fff}.flight-panel button{display:block;width:100%;margin-top:8px;padding:9px 12px;background:#aee5e8;border:0;border-radius:7px;color:#153040;font:700 13px Arial,sans-serif;cursor:pointer}.flight-panel button[disabled]{cursor:default;opacity:.65}
+.flight-panel button[hidden]{display:none}
+@media(max-width:740px){.flight-panel{right:8px;bottom:125px;max-width:173px}}
 .portal-back{display:inline-block;margin-top:5px;color:#dceaf0;font-size:12px}.portal-back:hover,.portal-back:focus-visible{color:#ffdc78}
 .touch-controls{display:none}canvas{touch-action:none}
 .notice:empty{display:none}
@@ -19,7 +23,8 @@
 @media(max-width:740px){.swimming .status{margin-top:47px}}
 @media(max-width:740px){.shore-nav{top:8px;left:auto;right:8px;transform:none}.vehicle-action{bottom:12px;right:8px}.status{top:54px;right:8px;bottom:auto}.hud{top:8px;left:8px;max-width:49vw;padding:7px 9px}.hud h1,.hud h1 span{font-size:clamp(13px,4.1vw,28px)}.hud p{font-size:12px;margin:3px 0}.bottom{bottom:10px;left:8px;max-width:53vw}.notice{bottom:78px;max-width:90vw;white-space:normal;text-align:center}}
 @media(pointer:coarse){.bottom{display:none}.touch-controls{position:absolute;left:12px;bottom:14px;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:5px;touch-action:none}.touch-controls button{font-size:22px;touch-action:none}.touch-controls button[data-move=w]{grid-column:2}.touch-controls button[data-move=a]{grid-row:2}.touch-controls button[data-move=s]{grid-row:2;grid-column:2}.touch-controls button[data-move=d]{grid-row:2;grid-column:3}.touch-controls button.active{background:#315b64}}
-</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü, sür veya yüz · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · G: el hareketi · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="jetSki">Jet ski</option><option value="airport">Havalimanı</option><option value="desert">Çöl kasabası</option></select><span id="swimStatus" class="swim-status" role="status" hidden>Yüzüyorsun</span></div>
+</style></head><body><div class="hud"><h1 class="game-logo">SAHİL <span>ŞEHRİ</span></h1><p class="mission" id="mission"></p><p class="health">♥ CAN: <span id="health">100</span></p><p id="character"></p><a class="portal-back" href="./">← Oyun sayfası</a></div><div class="status"><span id="weapon"></span><br>💵 <span id="money">0</span> $</div><div class="cross">+</div><div class="bottom">WASD / ok tuşları: yürü, sür veya yüz · Shift: koş · Fare: kamera<br>F: araca bin / in · E veya sol tık: ateş · V / Tab: envanter<br>1–3: karakter değiştir · P: telefon · R: yeniden başlat</div><div class="shore-nav" aria-label="Kumsal yönü"><span id="shoreArrow" aria-hidden="true">↑</span><span id="shoreDistance">Kumsal</span><select id="destination" class="destination" aria-label="Rota seç"><option value="shore">Kumsal</option><option value="jetSki">Jet ski</option><option value="airport">Havalimanı</option><option value="airplane">Uçak</option><option value="helicopter">Helikopter</option><option value="desert">Çöl kasabası</option></select><span id="swimStatus" class="swim-status" role="status" hidden>Yüzüyorsun</span></div>
+<div id="flightPanel" class="flight-panel" hidden><strong id="flightAltitude">0 m irtifa</strong><span id="flightHint">W / ↑ ile kalk</span><button id="flightLand" type="button" hidden>Otomatik iniş (L)</button></div>
 <div id="citySpeed" class="drive-readout" hidden><strong id="speedValue">0 km/sa</strong><span id="carName"></span></div>
 <button class="vehicle-action" id="vehicleAction" type="button" disabled>Araca bin (F)</button>
 <div class="touch-controls" aria-label="Hareket düğmeleri"><button type="button" data-move="w" aria-label="İleri">↑</button><button type="button" data-move="a" aria-label="Sol">←</button><button type="button" data-move="s" aria-label="Geri">↓</button><button type="button" data-move="d" aria-label="Sağ">→</button></div>
@@ -30,18 +35,21 @@
 <script src="../three.min.js"></script>
 <script src="bmw-araclari.js"></script>
 <script src="sehir-karakterleri.js?v=3"></script>
-<script src="sehir-bolge.js"></script>
-<script src="sehir-binalari.js"></script>
-<script src="sehir-sahili.js?v=2"></script>
+<script src="sehir-bolge.js?v=2"></script>
+<script src="sehir-binalari.js?v=2"></script>
+<script src="sehir-sahili.js?v=3"></script>
 <script src="sehir-tekneleri.js"></script>
 <script src="sehir-yuzuculer.js"></script>
 <script src="sehir-kopekbaligi.js?v=2"></script>
 <script src="sehir-jet-ski.js"></script>
 <script src="sehir-oturanlar.js"></script>
+<script src="sehir-hava-araclari.js"></script>
+<script src="sehir-ucus.js"></script>
+<script src="sehir-telefon.js"></script>
 <script>
 'use strict';
 
-if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar){document.querySelector('#error').style.display='block'}else{
+if(!window.THREE || !window.SehirBinalari || !window.SehirSahili || !window.SehirTekneleri || !window.SehirKarakterleri || !window.SehirBolge || !window.BMWAraclari || !window.SehirYuzuculer || !window.SehirKopekbaligi || !window.SehirJetSki || !window.SehirOturanlar || !window.SehirHavaAraclari || !window.SehirUcus || !window.SehirTelefon){document.querySelector('#error').style.display='block'}else{
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8bd1f2);
 scene.fog = new THREE.Fog(0xc4e4ef, 115, 740);
@@ -97,6 +105,8 @@ const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.8});function mes
 const region = SehirBolge.create(THREE, scene);
 const buildings = SehirBinalari.create(THREE, scene, (x, z) => (x <= -200 && z >= 200) || (x >= 200 && z <= -200));
 buildings.push(...region.bounds);
+const flight = SehirUcus.create(THREE, region.flight, SehirHavaAraclari.create(THREE, scene), buildings);
+const [airplane, helicopter] = flight.vehicles;
 function makeRoadSign(x, z, heading, text) {
   const sign = new THREE.Group();
   sign.position.set(x, 0, z);
@@ -170,6 +180,7 @@ const vehicles = [
   bmw(-233, 230, Math.PI / 2, 'M4', 0xd2a530),
   bmw(327, -238, -Math.PI / 2, 'M5', 0x2c465e),
 ];
+const boardableLandVehicles = [...vehicles, ...flight.vehicles];
 let current = null;
 
 const traffic = [
@@ -230,6 +241,10 @@ const speedPanel = $('#citySpeed');
 const speedValue = $('#speedValue');
 const carName = $('#carName');
 const endScreen = $('#endScreen');
+const flightPanel = $('#flightPanel');
+const flightAltitude = $('#flightAltitude');
+const flightHint = $('#flightHint');
+const flightLand = $('#flightLand');
 const coarsePointer = matchMedia('(pointer: coarse)');
 const roadEnd = 400;
 const beachEntryX = 414;
@@ -237,6 +252,8 @@ const destinations = {
   shore: { label: 'Kumsal', x: beachEntryX },
   jetSki: { label: 'Jet ski', point: jetSki.group.position },
   airport: { label: 'Havalimanı', x: 320, z: -240 },
+  airplane: { label: 'Uçak', point: airplane.group.position },
+  helicopter: { label: 'Helikopter', point: helicopter.group.position },
   desert: { label: 'Çöl kasabası', x: -320, z: 320 },
 };
 let cameraPitch = .32;
@@ -263,14 +280,31 @@ function explain(text) {
   if (text) noticeTimer = setTimeout(() => { notice.textContent = ''; }, 2900);
 }
 
+function isAircraft(vehicle) {
+  return vehicle === airplane || vehicle === helicopter;
+}
+
+const phone = SehirTelefon.create({
+  onRoute(key) {
+    if (!Object.hasOwn(destinations, key)) return;
+    destination.value = key;
+    updateNavigation();
+  },
+  onToggle(open) {
+    clearMovement();
+    if (open) document.exitPointerLock?.();
+  },
+});
+
 function nearestVehicle() {
   const jetDistance = Math.hypot(jetSki.group.position.x - player.position.x, jetSki.group.position.z - player.position.z);
   let nearest = jetDistance < 4.6 ? jetSki : null;
   if (swimming) return nearest;
-  let range = nearest ? jetDistance ** 2 : 36;
-  for (const candidate of vehicles) {
-    const distance = candidate.group.position.distanceToSquared(player.position);
-    if (distance >= range) continue;
+  let range = nearest ? jetDistance ** 2 : Infinity;
+  for (const candidate of boardableLandVehicles) {
+    const air = isAircraft(candidate);
+    const distance = air ? flight.boardingDistance(candidate, player.position) ** 2 : candidate.group.position.distanceToSquared(player.position);
+    if (distance >= range || distance >= (air ? candidate.boardingRange ** 2 : 36)) continue;
     range = distance;
     nearest = candidate;
   }
@@ -293,10 +327,15 @@ function interact() {
   if (current) {
     const vehicle = current;
     const onJetSki = vehicle === jetSki;
+    const inAircraft = isAircraft(vehicle);
+    if (inAircraft && !flight.canExit(vehicle)) {
+      explain(vehicle.airborne ? 'İnmek için önce L ile iniş yap.' : 'İnmek için aracın durmasını bekle.');
+      return;
+    }
     const { position, rotation } = vehicle.group;
     const cos = Math.cos(rotation.y);
     const sin = Math.sin(rotation.y);
-    const door = onJetSki ? 1.52 : vehicle.type === 'araba' ? 1.95 : 1.35;
+    const door = inAircraft ? 3.5 : onJetSki ? 1.52 : vehicle.type === 'araba' ? 1.95 : 1.35;
     vehicle.speed = 0;
     const safeExit = [[-door, 0], [door, 0], [0, 3.75], [0, -3.75]].find(([side, along]) => {
       const x = position.x + side * cos + along * sin;
@@ -314,7 +353,7 @@ function interact() {
     current = null;
     clearMovement();
     updateSwim(.05, last / 1000, 0);
-    explain(onJetSki ? 'Jet skiden indin.' : 'Araç park edildi. Yürüyerek devam edebilirsin.');
+    explain(onJetSki ? 'Jet skiden indin.' : inAircraft ? 'Havalimanındasın.' : 'Araç park edildi. Yürüyerek devam edebilirsin.');
   } else {
     const nextVehicle = nearestVehicle();
     if (!nextVehicle) {
@@ -335,18 +374,34 @@ function interact() {
     }
     clearMovement();
     explain('');
-    if (stage === 0 && current !== jetSki) { stage = 1; ui(); }
+    if (stage === 0 && current !== jetSki && !isAircraft(current)) { stage = 1; ui(); }
   }
   document.body.classList.toggle('jet-riding', current === jetSki);
+  document.body.classList.toggle('air-riding', isAircraft(current));
+  updateNavigation();
+}
+
+function requestLanding() {
+  if (!isAircraft(current) || !flight.startLanding(current)) return;
+  clearMovement();
   updateNavigation();
 }
 
 function updateNavigation() {
   const nearby = current ? null : nearestVehicle();
-  const action = current === jetSki ? 'Jet skiden in' : current ? 'Araçtan in' : nearby === jetSki ? 'Jet skiye bin' : 'Araca bin';
+  const aircraft = isAircraft(current) ? current : null;
+  const vehicleActions = {
+    airplane: ['Uçağa bin', 'Uçaktan in'],
+    helicopter: ['Helikoptere bin', 'Helikopterden in'],
+  };
+  let action = current ? 'Araçtan in' : 'Araca bin';
+  if (current === jetSki) action = 'Jet skiden in';
+  if (nearby === jetSki) action = 'Jet skiye bin';
+  if (aircraft) action = vehicleActions[aircraft.type][1];
+  if (isAircraft(nearby)) action = vehicleActions[nearby.type][0];
   const label = coarsePointer.matches ? action : `${action} (F)`;
   if (vehicleAction.textContent !== label) vehicleAction.textContent = label;
-  vehicleAction.disabled = !current && !nearby;
+  vehicleAction.disabled = aircraft ? !flight.canExit(aircraft) : !current && !nearby;
   const { x, z } = player.position;
   const target = destinations[destination.value];
   const point = target.point || target;
@@ -361,6 +416,17 @@ function updateNavigation() {
     const bearing = Math.atan2(-dx, -dz);
     shoreArrow.style.transform = `rotate(${(yaw - bearing) * 180 / Math.PI}deg)`;
   }
+  const altitude = aircraft ? Math.max(0, Math.round(aircraft.group.position.y - aircraft.start.y)) : 0;
+  flightPanel.hidden = !aircraft;
+  if (aircraft) {
+    const altitudeText = `${altitude} m irtifa`;
+    const hint = aircraft.approach ? 'Havalimanına iniş sürüyor' : aircraft.airborne ? 'W / ↑ yüksel · S / ↓ alçal · A / D dön' : 'W / ↑ ile kalk';
+    if (flightAltitude.textContent !== altitudeText) flightAltitude.textContent = altitudeText;
+    if (flightHint.textContent !== hint) flightHint.textContent = hint;
+    flightLand.hidden = !aircraft.airborne;
+    flightLand.disabled = Boolean(aircraft.approach);
+  }
+  phone.update({ destination: destination.value, vehicle: current?.label ?? '', speed: Math.round(Math.abs(current?.speed ?? 0) * 3.6), altitude });
   speedPanel.hidden = !current;
   if (current) {
     const readout = `${Math.round(Math.abs(current.speed) * 3.6)} km/sa`;
@@ -387,6 +453,7 @@ function held(key) {
 }
 
 vehicleAction.addEventListener('click', interact);
+flightLand.addEventListener('click', requestLanding);
 destination.addEventListener('change', () => {
   destination.blur();
   updateNavigation();
@@ -412,9 +479,10 @@ addEventListener('keydown', event => {
     if (original === 'r') location.reload();
     return;
   }
-  if (event.target === destination) return;
+  if (original === 'p' && !event.repeat && !inventory) { event.preventDefault(); phone.toggle(); return; }
+  if (phone.isOpen() || event.target === destination) return;
   const key = motionKeys[original] || original;
-  if (event.target === vehicleAction && key === ' ') return;
+  if ((event.target === vehicleAction || event.target === flightLand) && key === ' ') return;
   if (motionKeys[original] || ['tab', ' '].includes(key)) event.preventDefault();
   if (event.repeat) return;
   if (key === 'v' || key === 'tab') { toggleInventory(); return; }
@@ -424,6 +492,7 @@ addEventListener('keydown', event => {
   }
   keys[original] = true;
   if (key === 'f') interact();
+  if (key === 'l') requestLanding();
   if (key === 'e') shoot();
   if (key === 'g') { gestureUntil = performance.now()+1600; explain('El hareketi!'); }
   if (['1', '2', '3'].includes(key)) {
@@ -445,7 +514,7 @@ addEventListener('mousemove', event => {
 });
 let drag = null;
 canvas.addEventListener('pointerdown', event => {
-  if (inventory || event.button !== 0) return;
+  if (inventory || phone.isOpen() || event.button !== 0) return;
   if (event.pointerType === 'mouse' && document.pointerLockElement === canvas) {
     shoot();
     return;
@@ -531,7 +600,17 @@ function updateMovement(dt, elapsed) {
   const forward = Number(Boolean(held('w'))) - Number(Boolean(held('s')));
   const steer = Number(Boolean(held('d'))) - Number(Boolean(held('a')));
   let walked = 0;
-  if (current === jetSki) {
+  if (isAircraft(current)) {
+    const previousHeading = current.group.rotation.y;
+    const wasLanding = Boolean(current.approach);
+    flight.update(current, dt, forward, steer);
+    yaw += current.group.rotation.y - previousHeading;
+    player.position.copy(current.group.position);
+    if (wasLanding && !current.approach) {
+      clearMovement();
+      explain('İniş tamamlandı. F ile inebilirsin.');
+    }
+  } else if (current === jetSki) {
     const targetSpeed = forward > 0 ? 13.3 : forward < 0 ? -3.4 : 0;
     jetSki.speed += (targetSpeed - jetSki.speed) * (1 - Math.exp(-dt * 1.3));
     jetSki.steer += (steer - jetSki.steer) * (1 - Math.exp(-dt * 9));
@@ -630,7 +709,7 @@ function updateMission(now) {
 
 function updateCityCamera(smoothing) {
   const p = player.position;
-  const radius = current === jetSki ? 8.2 : current ? 15 : THREE.MathUtils.lerp(10, 7.5, immersion);
+  const radius = isAircraft(current) ? (current === airplane ? 26 : 20) : current === jetSki ? 8.2 : current ? 15 : THREE.MathUtils.lerp(10, 7.5, immersion);
   const anchorHeight = THREE.MathUtils.lerp(2, 1.85, immersion);
   cameraAnchor.set(0, anchorHeight + Math.sin(cameraPitch) * radius, Math.cos(cameraPitch) * radius);
   cameraAnchor.applyAxisAngle(up, yaw).add(p);
@@ -658,7 +737,7 @@ function loop(now) {
   const dt = Math.max(0, Math.min((now - last) / 1000, .05));
   last = now;
   const elapsed = now / 1000;
-  if (!inventory && stage !== 5) {
+  if (!inventory && !phone.isOpen() && stage !== 5) {
     updateMovement(dt, elapsed);
     updateMission(now);
     updateCityCamera(1 - Math.exp(-dt * 10));
@@ -672,6 +751,7 @@ function loop(now) {
   shark.update(elapsed, player.position);
   beachVisitors.update(elapsed, player.position);
   region.update(elapsed);
+  for (const aircraft of flight.vehicles) aircraft.model.update(elapsed, aircraft.power, current === aircraft);
   renderer.render(scene, camera);
 }
 updateCityCamera(1);

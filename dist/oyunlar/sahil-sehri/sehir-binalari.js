@@ -75,7 +75,7 @@ window.SehirBinalari = (() => {
       batches.get(material).matrices.push(transform.matrix.clone());
     }
 
-    piece(ground, -50, -.2, 0, 920, .2, 960);
+    piece(ground, -490, -.2, 0, 1800, .2, 2500);
     for (let road = -400; road <= 400; road += 80) {
       piece(sidewalk, road, -.082, 0, 23.6, .14, 828);
       piece(sidewalk, 0, -.08, road, 823, .14, 23.6);

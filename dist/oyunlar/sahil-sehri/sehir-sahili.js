@@ -2,8 +2,8 @@
 
 (() => {
   const beachStart = 408;
-  const coastExtent = 690;
-  const segmentCount = 172;
+  const coastExtent = 1250;
+  const segmentCount = 312;
   const tau = Math.PI * 2;
   const waterLevel = -.211;
 
@@ -103,7 +103,7 @@
   }
 
   function seawater(THREE) {
-    const depths = [-1.5, 0, 2.9, 6, 11, 19, 29, 44, 68, 100, 149, 217, 318, 475, 780];
+    const depths = [-1.5, 0, 2.9, 6, 11, 19, 29, 44, 68, 100, 149, 217, 318, 475, 1450];
     const geometry = coastStrip(THREE, depths.length, (z, column) => ({ x: limitAt(z) + depths[column], y: waterLevel }));
     const uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       time: { value: 0 },

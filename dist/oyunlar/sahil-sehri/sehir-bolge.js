@@ -225,8 +225,20 @@
     const apron = new THREE.MeshStandardMaterial({ color: 0x81817a, map: pavementMap, roughness: .96 });
     const yellow = 0xe4ba65;
     const white = 0xe3e6db;
-    box(0x9b936d, 292.7, -.027, -298.75, 198.4, .19, 192.2);
-    instance(unitBox, tarmac, 225, .08, -298.9, 28, .08, 181.8);
+    const runway = { x: 225, xLimit: 14, zMin: -413, zMax: -206, y: .12 };
+    const helipad = { x: 278, z: -219, radius: 9.5, y: .15 };
+    const flight = {
+      airplane: { x: runway.x, y: runway.y, z: -222, yaw: 0 },
+      helicopter: { x: helipad.x, y: helipad.y, z: helipad.z, yaw: 0 },
+      runway,
+      helipad,
+    };
+    const runwayLength = runway.zMax - runway.zMin;
+    const runwayCenter = (runway.zMin + runway.zMax) / 2;
+    const airportGround = 0x9b936d;
+    box(airportGround, 292.7, -.027, -298.75, 198.4, .19, 192.2);
+    box(airportGround, runway.x, -.032, -403.4, 37, .19, 24.6);
+    instance(unitBox, tarmac, runway.x, runway.y - .04, runwayCenter, runway.xLimit * 2, .08, runwayLength);
     instance(unitBox, taxi, 256.5, .081, -299, 9, .079, 158);
     for (const z of [-369, -296, -230]) instance(unitBox, taxi, 245.5, .081, z, 13, .079, 9);
     instance(unitBox, taxi, 280.2, .081, -342.5, 38.4, .079, 12);
@@ -236,14 +248,33 @@
     instance(unitBox, taxi, 369.5, .081, -240, 79, .079, 19.9);
     box(0xaaa89a, 352, .063, -252, 40, .079, 26);
 
+    const sidewalk = 0xbebaaa;
+    box(sidewalk, 283.4, .092, -239.3, 73.2, .048, 3.2);
+    box(sidewalk, 246.2, .092, -230.4, 3.15, .048, 17.8);
+    box(sidewalk, 242.95, .092, -221.5, 8, .048, 3.2);
+    box(sidewalk, helipad.x, .092, -233.2, 3.2, .048, 12.2);
+    for (let offset = -1.2; offset <= 1.21; offset += .6) {
+      box(white, 256.5, .142, -239.3 + offset, 9, .015, .27);
+      box(white, 246.2 + offset, .142, -230, .28, .015, 9);
+    }
+
+    const padSurface = new THREE.CylinderGeometry(helipad.radius, helipad.radius, .1, 48);
+    instance(padSurface, tarmac, helipad.x, helipad.y - .05, helipad.z, 1, 1, 1);
+    const padLine = new THREE.RingGeometry(helipad.radius - .7, helipad.radius - .46, 48).rotateX(-Math.PI / 2);
+    instance(padLine, material(yellow), helipad.x, helipad.y + .022, helipad.z, 1, 1, 1);
+    for (const side of [-1, 1]) box(white, helipad.x + side * 1.7, helipad.y + .014, helipad.z, .58, .016, 4.7);
+    box(white, helipad.x, helipad.y + .015, helipad.z, 3.25, .018, .59);
+
     for (const side of [-1, 1]) {
-      box(white, 225 + side * 12.5, .14, -299, .22, .016, 177.7);
+      box(white, runway.x + side * 12.5, .14, runwayCenter, .22, .016, runwayLength - 4.1);
       for (let i = 0; i < 4; i++) {
-        for (const end of [-1, 1]) box(white, 225 + side * (2.2 + i * 2.05), .14, -299 + end * 83.3, .92, .016, 5.1);
+        for (const z of [runway.zMin + 6.3, runway.zMax - 6.3]) {
+          box(white, runway.x + side * (2.2 + i * 2.05), .14, z, .92, .016, 5.1);
+        }
       }
     }
-    for (let z = -363; z <= -233; z += 10.75) box(white, 225, .14, z, .47, .016, 5.15);
-    for (const [text, z, rotation] of [['02', -373.3, Math.PI], ['20', -224.7, 0]]) {
+    for (let z = runway.zMin + 24; z <= runway.zMax - 24; z += 10.75) box(white, runway.x, .14, z, .47, .016, 5.15);
+    for (const [text, z, rotation] of [['18', runway.zMin + 15.3, Math.PI], ['36', runway.zMax - 15.3, 0]]) {
       const map = canvasMap(256, 128, ctx => {
         ctx.fillStyle = '#dddcd2';
         ctx.font = '900 112px Arial, sans-serif';
@@ -251,7 +282,7 @@
         ctx.fillText(text, 128, 109);
       });
       const label = new THREE.Mesh(new THREE.PlaneGeometry(4.7, 2.8).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: .45 }));
-      label.position.set(225, .15, z);
+      label.position.set(runway.x, .15, z);
       label.rotation.y = rotation;
       district.add(label);
     }
@@ -268,12 +299,18 @@
     const runwayLamp = new THREE.MeshBasicMaterial({ color: 0xbad8ff });
     const approachLamp = new THREE.MeshBasicMaterial({ color: 0x88e8b9 });
     const lampGeometry = new THREE.SphereGeometry(.21, 6, 4);
-    for (let z = -382; z <= -216; z += 9.2) {
-      for (const side of [-1, 1]) instance(lampGeometry, runwayLamp, 225 + side * 14.5, .18, z, 1, 1, 1);
+    for (let z = runway.zMin + 5.5; z <= runway.zMax - 3; z += 9.2) {
+      for (const side of [-1, 1]) instance(lampGeometry, runwayLamp, runway.x + side * 14.5, .18, z, 1, 1, 1);
+    }
+    for (let z = -373; z <= -223; z += 9.2) {
       instance(lampGeometry, runwayLamp, 251.7, .18, z, .65, .65, .65);
     }
-    for (const z of [-390, -208]) {
-      for (let x = 214; x <= 236; x += 3.15) instance(lampGeometry, approachLamp, x, .17, z, 1, 1, 1);
+    for (const z of [runway.zMin + .65, runway.zMax - .65]) {
+      for (let x = runway.x - 11; x <= runway.x + 11; x += 3.15) instance(lampGeometry, approachLamp, x, .17, z, 1, 1, 1);
+    }
+    for (let angle = Math.PI / 8; angle < Math.PI * 2; angle += Math.PI / 4) {
+      const rim = helipad.radius - .36;
+      instance(lampGeometry, approachLamp, helipad.x + Math.sin(angle) * rim, .22, helipad.z + Math.cos(angle) * rim, .6, .6, .6);
     }
 
     const terminalWhite = 0xe0ded3;
@@ -332,6 +369,38 @@
     box(0x315b61, 331, 2.8, -230, 13.18, 1.72, .24);
     for (const side of [-1, 1]) box(0x7b9090, 331 + side * 5.3, 1.62, -230, .15, 3.24, .15);
     banner('TERMİNAL  ↖', 331, 2.8, -229.87, 13.14, 1.66, '#315b61', 86);
+
+    function boardingSign(title, x, z, width, yaw) {
+      const rows = Array.isArray(title) ? title : [title];
+      const height = rows.length > 1 ? 1.55 : .87;
+      const y = 2.08;
+      box(0x294a57, x, y, z, width, height, .15, yaw);
+      for (const side of [-1, 1]) {
+        const offset = side * (width / 2 - .34);
+        box(0x718489, x + Math.cos(yaw) * offset, .93, z - Math.sin(yaw) * offset, .1, 1.86, .1);
+      }
+      const map = canvasMap(768, 224, ctx => {
+        ctx.fillStyle = '#244858';
+        ctx.fillRect(0, 0, 768, 224);
+        ctx.strokeStyle = '#b6d7d4';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(10, 10, 748, 204);
+        ctx.fillStyle = '#fffae9';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `700 ${rows.length > 1 ? 63 : 112}px Arial, sans-serif`;
+        rows.forEach((row, index) => ctx.fillText(row, 384, (index + 1) * 224 / (rows.length + 1), 700));
+      });
+      const panel = new THREE.Mesh(new THREE.PlaneGeometry(width - .025, height - .022), new THREE.MeshBasicMaterial({ map }));
+      panel.position.set(x + .079 * Math.sin(yaw), y, z + .079 * Math.cos(yaw));
+      panel.rotation.y = yaw;
+      district.add(panel);
+    }
+
+    boardingSign(['←  UÇAK', '↙  HELİKOPTER'], 309, -248, 6.9, 0);
+    boardingSign(['UÇAK  ↑', 'HELİKOPTER  ←'], 282.2, -244.7, 6.35, Math.PI / 2);
+    boardingSign('UÇAK BİNİŞ  →', 244.6, -217.9, 5.75, Math.PI);
+    boardingSign('HELİKOPTER BİNİŞ  →', 287.7, -227.7, 5.8, Math.PI);
 
     for (const x of [196, 390]) {
       for (let z = -388; z <= -222; z += 7.4) {
@@ -405,7 +474,7 @@
     plane(371, 2.34, -334.7, Math.PI * .97, 0xb77a52);
     solid(315, -330.8, 5.5, 8.8, 27);
     solid(371, -334.7, 6, 8.8, 27);
-    const airborne = plane(225, 8, -339, 0, 0x688e91, .94);
+    const airborne = plane(326, 35, -349, 0, 0x688e91, .94);
 
     for (const [geometry, group] of batches) {
       for (const [surface, matrices] of group) {
@@ -418,12 +487,12 @@
 
     function update(timeSeconds) {
       const angle = timeSeconds * .13 - .5;
-      airborne.position.set(247 + Math.cos(angle) * 42, 18 + 6 * Math.sin(angle * 2), -337 + Math.sin(angle) * 66);
-      airborne.rotation.set(-.043 * Math.cos(angle * 2), Math.atan2(42 * Math.sin(angle), -66 * Math.cos(angle)), -.15);
+      airborne.position.set(326 + Math.cos(angle) * 23, 36 + 4 * Math.sin(angle * 2), -349 + Math.sin(angle) * 49);
+      airborne.rotation.set(-.043 * Math.cos(angle * 2), Math.atan2(23 * Math.sin(angle), -49 * Math.cos(angle)), -.15);
       beacon.material.color.setHex(Math.sin(timeSeconds * 6.1) > .47 ? 0xffbc82 : 0x9e3e30);
     }
 
-    return { bounds, update };
+    return { bounds, flight, update };
   }
 
   window.SehirBolge = { create };
